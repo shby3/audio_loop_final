@@ -82,79 +82,6 @@ class Track:
         filename = getattr(self, 'track_filename', 'None')
         return f"Track(id={self.track_id}, name={name}, .wav file={filename})"
 
-    def record_track(self):
-        """
-        Description: Records audio to the track as a .wav file.
-        Args:
-            - None.
-        Returns:
-            - None.
-        Relationship(s):
-            - None.
-        # TODO: Method eventually moving to a controller class
-        """
-        length = self.track_length_secs
-        channels = self.channel_config
-        samplerate = self.sample_rate
-        blocksize = self.blocksize
-        dtype = self.dtype
-        filepath = self.track_filepath
-        wav_subtype = self.wav_subtype
-        frames_total = length * samplerate
-        frames_written = 0
-
-        self.track_state = "RECORD"
-        print(f"Recording audio to {filepath}...")
-        with sf.SoundFile(
-            filepath, "w", samplerate, channels, wav_subtype
-        ) as track_file:
-            with sd.InputStream(
-                samplerate, blocksize, None, channels, dtype
-            ) as input_stream:
-
-                #  passes mic input to input stream and writes to .wav file
-                while frames_written < frames_total:
-                    frames_pending = frames_total - frames_written
-                    frames_chunk = blocksize
-                    # handles where last chunk of frames is less than blocksize
-                    if frames_pending < frames_chunk:
-                        frames_chunk = frames_pending
-
-                    indata, overflowed = input_stream.read(
-                        frames_chunk
-                    )  # numpy array shape = (frames_chunk, channels)
-
-                    track_file.write(indata)
-                    frames_written += frames_chunk
-
-                print(f"FINISHED recording audio to {filepath}.")
-                self.track_state = "STOP"
-
-    def play_track(self):
-        """
-        Description: Plays back audio from the track.
-        Args:
-            - None.
-        Returns:
-            - None.
-        Relationship(s):
-            - None.
-        """
-        pass
-
-    def callback(self, outdata, frames, length, status):
-        """
-        Description: Handles processing of audio data within streams.
-        Args:
-            - None.
-        Returns:
-            - None.
-        Relationship(s):
-            - Used with Stream classes in sounddevice.
-            Does not change arg names.
-        """
-        pass
-
     def generate_track_path(self, extension):
         """
         Description: Generates a unique file path for the track.
@@ -194,6 +121,7 @@ class Track:
             - Controller accesses this function to change the volume
             of a track.
         """
+
         if volume < 0.0 or volume > 1.0:
             Exception("Volume must be between 0.0 and 1.0")
         self.track_volume = volume
@@ -208,7 +136,6 @@ class Track:
         Relationship(s):
             - None
         """
-
         return self.reverse_track
 
     def set_reverse(self, reverse: bool):
