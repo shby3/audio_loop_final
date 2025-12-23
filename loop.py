@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 DEFAULT_LOOP_NAME = "New Loop"
 VALID_POSITIONS = [x for x in range(1, 7)]
@@ -84,6 +85,33 @@ class Loop:
             track = self.loop_tracks[pos]
             lines.append(f"Track {pos}: {track if track else 'Empty'}")
         return "\n".join(lines)
+
+    def generate_track_path(self) -> str:
+        """
+        Description: Ensures project directories are present then creates a
+                     path to the next track audio file.
+        Args:
+            - None.
+        Returns:
+            - A string containing the track's file path.
+        Relationship(s):
+            - None.
+        """
+        # create file name
+        file_name = f"track_{self.loop_birth}.wav"
+
+        projects_dir = "projects"  # top level directory
+        # add subdirectories to path if not present
+        recordings_dir = os.path.join(projects_dir, "recordings")
+        waveforms_dir = os.path.join(projects_dir, "waveforms")
+        wav_images_dir = os.path.join(projects_dir, "waveform_images")
+
+        # exist_ok=True avoids raising err if directories already exist
+        os.makedirs(recordings_dir, exist_ok=True)
+        os.makedirs(waveforms_dir, exist_ok=True)
+        os.makedirs(wav_images_dir, exist_ok=True)
+
+        return os.path.join(recordings_dir, file_name)
 
     @staticmethod
     def check_position(position) -> None:

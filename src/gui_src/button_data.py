@@ -1,7 +1,4 @@
 from PySide6.QtGui import QKeySequence
-from ..audio_src.record_functions import (
-    record_track as handle_record,
-)
 
 """
 +++------------------------------------------------------------------------+++
