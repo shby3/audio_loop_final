@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250115214533",
+  "track_name": "drums",
+  "displayed_track_name": "Drums",
+  "track_length_secs": 180,
+  "track_elapsed_secs": 32,
+  "track_birth": "2025-01-15T21:45:32Z",
+  "track_filename": "drums.wav",
+  "track_waveform": "drums.png",
+  "track_numpy": [],
+  "track_volume": 1.0,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 1.0,
+  "xf2": 1.0,
+  "is_stereo_right": false
+}

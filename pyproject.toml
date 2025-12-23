@@ -1,0 +1,11 @@
+# ==============================
+#  Python Project Configuration
+# NOTE: must remain in app root directory
+# ==============================
+
+[tool.black]  
+line-length = 79  # sets max line length for code/comments
+
+[tool.isort]
+line_length = 79  # sets max line length for imports
+combine_as_imports = true  # combines imports from the same module

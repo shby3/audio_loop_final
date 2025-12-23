@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250205181001",
+  "track_name": "pad",
+  "displayed_track_name": "Synth Pad",
+  "track_length_secs": 240,
+  "track_elapsed_secs": 8,
+  "track_birth": "2025-02-05T18:10:01Z",
+  "track_filename": "pad.wav",
+  "track_waveform": "pad.png",
+  "track_numpy": [],
+  "track_volume": 0.75,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 1.2,
+  "xf2": 0.9,
+  "is_stereo_right": false
+}

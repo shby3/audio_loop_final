@@ -1,0 +1,17 @@
+{
+  "loop_id": "Loop_20250205181000",
+  "loop_name": "ambient_pad",
+  "displayed_loop_name": "Ambient Pad Loop",
+  "is_selected": true,
+  "loop_elapsed_secs": 8,
+  "loop_birth": "2025-02-05T18:10:00Z",
+  "loop_length": 240,
+  "loop_tracks": {
+    "1": "Track_20250205181001.track",
+    "2": "Track_20250205181002.track",
+    "3": "Track_20250205181003.track",
+    "4": null,
+    "5": null,
+    "6": null
+  }
+}

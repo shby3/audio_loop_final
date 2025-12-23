@@ -1,0 +1,20 @@
+{
+  "channel_config": 2,
+  "track_id": "Track_20250115214532",
+  "track_name": "synth_lead_right",
+  "displayed_track_name": "Synth Lead (R)",
+  "track_length_secs": 180,
+  "track_elapsed_secs": 32,
+  "track_birth": "2025-01-15T21:45:31Z",
+  "track_filename": "synth_lead_R.wav",
+  "track_waveform": "synth_lead_R.png",
+  "track_numpy": [],
+  "track_volume": 0.9,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 0.8,
+  "xf2": 1.3,
+  "is_stereo_right": true
+}

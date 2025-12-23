@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250201100001",
+  "track_name": "guitar_rhythm",
+  "displayed_track_name": "Guitar Rhythm",
+  "track_length_secs": 120,
+  "track_elapsed_secs": 5,
+  "track_birth": "2025-02-01T10:00:01Z",
+  "track_filename": "guitar_rhythm.wav",
+  "track_waveform": "guitar_rhythm.png",
+  "track_numpy": [0.12, -0.33, 0.21],
+  "track_volume": 0.85,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 1.0,
+  "xf2": 1.0,
+  "is_stereo_right": false
+}

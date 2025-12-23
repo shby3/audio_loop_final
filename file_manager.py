@@ -1,0 +1,272 @@
+"""
++++------------------------------------------------------------------------+++
+Creation of the methods associated with serialization
+and deserialization for tracks and loops.
+
+Written by: Michelle Mann
++++------------------------------------------------------------------------+++
+"""
+
+
+import json
+from loop import Loop
+from track import Track
+from pathlib import Path
+
+
+class FileManager:
+    """
+    Description: Represents the file manager handling file structures for our
+    app. The File Manager reads directly from the data structures associated
+    with storing, reading, writing, serializing and deserializing our files.
+    Args:
+        - serialize_loop (loop: Obj): Takes a loop object and stores as a .loop
+                                        JSON readable file in computer memory
+                                        (not local memory).
+        - deserialize_loop (path: str): Takes a file path for a .loop file and
+                                        maps the associated JSON object to a
+                                        Loop object.
+    """
+
+    def serialize_loop(self, loop: Loop, path: str = None) -> Path:
+        """
+        Description: Writes a Loop object to a .loop extension. This file can
+        then be accessed from a file browser as needed. Stored as a
+        JSON file until passed into a dedicated Loop object to keep
+        human-readable.
+
+        Args:
+            - loop (Loop): A Loop dataclass structure.
+            - path (str): Optional file path. If not provided, uses loop name.
+
+        Returns:
+            - A dedicated file path mapped to a dataclass storage location.
+        """
+        if path is None:
+            path = f"{loop._loop_id}.loop"
+
+        p = Path(path)
+        # Serialize track objects to their file paths or None
+        serialized_tracks = {}
+        for pos, track in loop.loop_tracks.items():
+            if track is None:
+                serialized_tracks[pos] = None
+            else:
+                # Store track path relative to Tracks folder
+                track_path = getattr(track, 'file_path', str(track))
+                if 'Tracks' in track_path:
+                    # Extract just the filename from the full path
+                    serialized_tracks[pos] = Path(track_path).name
+                else:
+                    serialized_tracks[pos] = track_path
+
+        data = {
+            "loop_name": loop.loop_name,
+            "loop_tracks": serialized_tracks,
+            "is_selected": loop.is_selected,
+            "loop_elapsed_secs": loop.loop_elapsed_secs,
+            "loop_length": loop.loop_length,
+            "loop_birth": (loop.loop_birth.isoformat()
+                           if hasattr(loop.loop_birth, 'isoformat')
+                           else str(loop.loop_birth)),
+            "loop_id": loop._loop_id
+        }
+
+        p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        return p
+
+    def deserialize_loop(self, path: str) -> Loop:
+        """
+        Description: Loads a Loop from a .loop file extension. This file can
+        then be accessed via it's loop playback around (either the loop design)
+        area or the loop buckets area) as needed. Loop files will deserialize
+        as JSON files until loaded, and then will be stored in memory as a Loop
+        class object.
+
+        Args:
+            - path (): The naming convention (a timestamp) associated with a
+                                        file name.
+
+        Returns:
+            - A Loop object that can be passed to valid loop readable areas.
+
+        Relationships:
+            - Callable from Controller.
+        """
+        # Gets the file path as a JSON object.
+        text = Path(path).read_text(encoding="utf-8")
+        data = json.loads(text)
+
+        # Create loop first
+        loop = Loop(loop_name=data["loop_name"])
+
+        # Maps the loop data - deserialize track paths to Track objects
+        loop_dir = Path(path).parent
+
+        # If loop is in Loops subfolder, look for Tracks at same level
+        if loop_dir.name == "Loops":
+            tracks_dir = loop_dir.parent / "Tracks"
+        else:
+            tracks_dir = loop_dir / "Tracks"
+
+        for pos, track_path in data["loop_tracks"].items():
+            if track_path is None:
+                loop.loop_tracks[int(pos)] = None
+            else:
+                try:
+                    # Look for tracks in Tracks subfolder first, then fallback
+                    # to loop directory
+                    if (tracks_dir / track_path).exists():
+                        full_track_path = tracks_dir / track_path
+                    else:
+                        full_track_path = loop_dir / track_path
+                    loop.loop_tracks[int(pos)] = self.deserialize_track(
+                        str(full_track_path), loop._loop_id)
+                except FileNotFoundError:
+                    # For testing: keep track path string if file missing
+                    loop.loop_tracks[int(pos)] = track_path
+
+        loop.is_selected = data["is_selected"]
+        loop.loop_elapsed_secs = data["loop_elapsed_secs"]
+        loop.loop_length = data["loop_length"]
+
+        # Use loop_id from JSON if available
+        if "loop_id" in data:
+            loop._loop_id = data["loop_id"]
+
+        # Handle datetime deserialization
+        from datetime import datetime
+        if isinstance(data["loop_birth"], str):
+            try:
+                loop.loop_birth = datetime.fromisoformat(data["loop_birth"])
+            except ValueError:
+                loop.loop_birth = datetime.now()
+        else:
+            loop.loop_birth = data["loop_birth"]
+
+        return loop
+
+    def deserialize_track(self, path: str, loop_id: str = None):
+        """
+        Description: Loads a Track from a .track file.
+        Args:
+            - path (str): Path to the .track file
+            - loop_id (str): The loop_id this track belongs to
+        Returns:
+            - Track object
+        """
+        text = Path(path).read_text(encoding="utf-8")
+        data = json.loads(text)
+
+        # Create Track object with correct constructor args
+        track = Track(
+            track_name=data.get("track_name", "New Track"),
+            assigned_loop=loop_id,
+            track_length_secs=data.get("track_length_secs", 10),
+            track_elapsed_secs=data.get("track_elapsed_secs", 0),
+            channel_config=data.get("channel_config", 1),
+            reverse_track=data.get("is_reversed", False),
+            time_dilation=data.get("time_dilation", 0),
+            pitch_modulation=data.get("pitch_modulation", 0)
+        )
+        
+        # Override the auto-generated track_id with the one from file
+        track.track_id = data["track_id"]
+
+        # Set additional attributes that aren't in constructor
+        track.track_state = data.get("track_state", "STOP")
+        track.track_volume = data.get("track_volume", 1.0)
+        track.track_birth = data.get("track_birth", track.track_birth)
+        track.track_name = data.get("track_name")
+        track.track_waveform = data.get("track_waveform")
+        track.file_path = path
+
+        return track
+
+    def serialize_track(self, track: Track, path: str = None) -> Path:
+        """
+        Description: Writes a Track object to a .track file.
+        Args:
+            - track (Track): A Track object
+            - path (str): Optional file path. If not provided, uses track_id
+        Returns:
+            - Path: The file path where track was saved
+        """
+        if path is None:
+            path = f"{track.track_id}.track"
+
+        p = Path(path)
+        data = {
+            "track_id": track.track_id,
+            "track_name": track.track_name,
+            "track_length_secs": track.track_length_secs,
+            "track_elapsed_secs": track.track_elapsed_secs,
+            "channel_config": track.channel_config,
+            "track_state": track.track_state,
+            "track_volume": track.track_volume,
+            "is_reversed": track.is_reversed,
+            "time_dilation": track.time_dilation,
+            "pitch_modulation": track.pitch_modulation,
+            "track_birth": (track.track_birth.isoformat()
+                            if hasattr(track.track_birth, 'isoformat')
+                            else str(track.track_birth)),
+            "assigned_loop": track.assigned_loop
+        }
+
+        p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        return p
+
+    def setup_project_directories(self, home_path: Path):
+        """
+        Description: Creates the required project directory structure.
+        Args:
+            - home_path (Path): Path to the home directory
+        Returns:
+            - None
+        Relationship(s):
+            - File structure should look like this:
+            <home_dir>:
+                - Tracks
+                - Loops
+                - .hidden:
+                    - .recordings
+                    - .waveform_images
+        """
+
+        home_dir = home_path
+
+        # Create Tracks and Loops folders
+        tracks_dir = home_dir / "Tracks"
+        loops_dir = home_dir / "Loops"
+        tracks_dir.mkdir(exist_ok=True)
+        loops_dir.mkdir(exist_ok=True)
+
+        # Create hidden folders
+        hidden_dir = home_dir / ".hidden"           # Parent of hidden folders.
+
+        # Children of hidden folders
+        recordings_dir = hidden_dir / ".recordings"
+        waveform_images_dir = hidden_dir / ".waveform_images"
+
+        recordings_dir.mkdir(parents=True, exist_ok=True)
+        waveform_images_dir.mkdir(parents=True, exist_ok=True)
+
+    def set_home_directory(self, folder_path: str):
+        """Sets up project directory structure in specified folder."""
+        root = Path(folder_path)
+        self.setup_project_directories(root)
+        return root
+
+    def rename_file(self, src_path: str, new_name: str):
+        """Renames a file or folder."""
+        src = Path(src_path)
+        dst = src.with_name(new_name.strip())
+        if dst.exists() and dst != src:
+            raise FileExistsError(f"'{new_name}' already exists")
+        src.rename(dst)
+        return dst
+
+    def delete_file(self, file_path: str):
+        """Deletes a file using send2trash for safe removal."""
+        from send2trash import send2trash
+        send2trash(str(file_path))

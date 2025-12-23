@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250205181003",
+  "track_name": "vocal_fx",
+  "displayed_track_name": "Vocal FX Reverse",
+  "track_length_secs": 240,
+  "track_elapsed_secs": 8,
+  "track_birth": "2025-02-05T18:10:03Z",
+  "track_filename": "vocal_fx.wav",
+  "track_waveform": "vocal_fx.png",
+  "track_numpy": [],
+  "track_volume": 0.6,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": true,
+  "xf1": 1.0,
+  "xf2": 1.0,
+  "is_stereo_right": false
+}

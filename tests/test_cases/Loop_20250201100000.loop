@@ -1,0 +1,17 @@
+{
+  "loop_id": "Loop_20250201100000",
+  "loop_name": "main_loop",
+  "displayed_loop_name": "Main Loop",
+  "is_selected": true,
+  "loop_elapsed_secs": 10,
+  "loop_birth": "2025-02-01T10:00:00Z",
+  "loop_length": 120,
+  "loop_tracks": {
+    "1": "Track_20250201100001.track",
+    "2": "Track_20250201100002.track",
+    "3": null,
+    "4": null,
+    "5": null,
+    "6": null
+  }
+}

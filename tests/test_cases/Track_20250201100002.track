@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250201100002",
+  "track_name": "bass",
+  "displayed_track_name": "Bass Line",
+  "track_length_secs": 120,
+  "track_elapsed_secs": 10,
+  "track_birth": "2025-02-01T10:00:02Z",
+  "track_filename": "bass.wav",
+  "track_waveform": "bass.png",
+  "track_numpy": [0.05, -0.15, 0.08],
+  "track_volume": 0.9,
+  "track_state": "play",
+  "is_muted": false,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 1.0,
+  "xf2": 1.0,
+  "is_stereo_right": false
+}

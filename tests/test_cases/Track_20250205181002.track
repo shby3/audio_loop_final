@@ -1,0 +1,20 @@
+{
+  "channel_config": 1,
+  "track_id": "Track_20250205181002",
+  "track_name": "texture",
+  "displayed_track_name": "Granular Texture",
+  "track_length_secs": 240,
+  "track_elapsed_secs": 8,
+  "track_birth": "2025-02-05T18:10:02Z",
+  "track_filename": "texture.wav",
+  "track_waveform": "texture.png",
+  "track_numpy": [],
+  "track_volume": 1.0,
+  "track_state": "stop",
+  "is_muted": true,
+  "is_soloed": false,
+  "is_reversed": false,
+  "xf1": 0.5,
+  "xf2": 1.0,
+  "is_stereo_right": false
+}

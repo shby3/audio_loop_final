@@ -1,0 +1,17 @@
+{
+  "loop_id": "Loop_20250115214530",
+  "loop_name": "live_set",
+  "displayed_loop_name": "Live Performance Set",
+  "is_selected": false,
+  "loop_elapsed_secs": 32,
+  "loop_birth": "2025-01-15T21:45:30Z",
+  "loop_length": 180,
+  "loop_tracks": {
+    "1": "Track_20250115214531.track",
+    "2": "Track_20250115214532.track",
+    "3": "Track_20250115214533.track",
+    "4": null,
+    "5": null,
+    "6": null
+  }
+}
