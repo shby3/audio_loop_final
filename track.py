@@ -8,13 +8,6 @@ import os
 
 assert np  # keeps linter from complaining np isn't directly called
 
-RECORD_LENGTH = 10  # in seconds
-BPM = 120  # beats per minute
-SAMPLE_RATE = 48000  # audio samples per second
-SAMPLES_PER_BEAT = (SAMPLE_RATE * 60) / BPM
-BEATS_PER_BAR = 4
-SAMPLES_PER_BAR = SAMPLES_PER_BEAT * BEATS_PER_BAR  # 4/4 bar
-
 DEFAULT_TRACK_NAME = "New Track"
 
 
@@ -24,24 +17,13 @@ class Track:
     Description: Represents a single audio layer within a loop.
     Args:
         - track_id (int): A unique track identifier.
-        - assigned_loop (Loop obj): The loop of which the given track is
-                                    layered within.
-        - track_length_secs (int): The length of the track in seconds.
-        - track_elapsed_secs (int): Time elapsed during track playback in
-                                    seconds.
         - channel_config (int): Mono (1) or stereo (2) setting.
         - reverse_track (bool): Describes whether the track is reversed.
-        - TODO: update record_track() to pass sample progress to MasterClock
-        - play_track() TODO write this function
-        - callback() TODO extract callback function from draft_instant_playback
     """
 
     def __init__(
         self,
         track_name: str = DEFAULT_TRACK_NAME,
-        assigned_loop: object = None,
-        track_length_secs=RECORD_LENGTH,
-        track_elapsed_secs=0,
         channel_config=1,
         reverse_track=False,
         time_dilation=0,
@@ -51,27 +33,11 @@ class Track:
         self.track_name = track_name
         self.track_birth = datetime.now()
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
-        self.track_length_secs = track_length_secs  # set by first recording?
-        self.track_elapsed_secs = track_elapsed_secs
-        self.assigned_loop = assigned_loop
         self.track_state = "STOP"
         self.track_volume = 1.0
         self.channel_config = channel_config
         self.track_birth = time()  # format is seconds since Unix epoch
-        self.track_filepath = self.generate_track_path(".wav")
-        self.waveform_filepath = self.generate_track_path(".png")
-
-        # recording properties
-        self.sample_rate = SAMPLE_RATE
-        self.samples_per_beat = SAMPLES_PER_BEAT
-        self.dtype = "float32"  # for numpy array holding audio data
-
-        # a common range is 128-1024.
-        # lower = less latency but more CPU intensive
-        self.blocksize = 256  # number of audio frames processed per callback
-        self.samples_per_beat = SAMPLES_PER_BEAT
-        self.overdub_track = False
-        self.wav_subtype = "PCM_16"  # good compatibility
+        self.track_filepath = self.generate_track_path()
 
         # effects
         self.is_reversed = reverse_track
