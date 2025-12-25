@@ -4,6 +4,7 @@ from datetime import datetime
 import sounddevice as sd
 import numpy as np
 import soundfile as sf
+import os
 
 assert np  # keeps linter from complaining np isn't directly called
 
@@ -82,20 +83,32 @@ class Track:
         filename = getattr(self, 'track_filename', 'None')
         return f"Track(id={self.track_id}, name={name}, .wav file={filename})"
 
-    def generate_track_path(self, extension):
+    def generate_track_path(self) -> str:
         """
-        Description: Generates a unique file path for the track.
+        Description: Ensures project directories are present then creates a
+                     path to the next track audio file.
         Args:
-            - extension (str): The file extension for the track file.
+            - None.
         Returns:
-            - file_name (str): The generated file path.
+            - A string containing the track's file path.
         Relationship(s):
-            - Used to generate a unique file path for the track.
+            - None.
         """
-        if not hasattr(self, 'track_filename'):
-            self.track_filename = f"{self.track_id}{extension}"
+        # create file name
+        file_name = f"track_{self.track_birth}.wav"
 
-        return f"{self.track_id}{extension}"
+        projects_dir = "projects"  # top level directory
+        # add subdirectories to path if not present
+        recordings_dir = os.path.join(projects_dir, "recordings")
+        waveforms_dir = os.path.join(projects_dir, "waveforms")
+        wav_images_dir = os.path.join(projects_dir, "waveform_images")
+
+        # exist_ok=True avoids raising err if directories already exist
+        os.makedirs(recordings_dir, exist_ok=True)
+        os.makedirs(waveforms_dir, exist_ok=True)
+        os.makedirs(wav_images_dir, exist_ok=True)
+
+        return os.path.join(recordings_dir, file_name)
 
     def get_volume(self):
         """
