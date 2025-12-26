@@ -119,8 +119,58 @@ class Loop:
             self.current_frame += chunksize
 
     def play(self):
-        with self.stream:
-            sleep(100)
+        """
+        Description: Starts playing the audio of tracks in Loop with a sd Stream.
+        Args:
+                - None
+        Returns:
+                - None
+        """
+        self.stream.start()
+
+    def stop(self):
+        """
+        Description: Stops playing the audio of tracks in Loop with a sd Stream, and
+        sets self.current_frame to zero.
+        Args:
+                - None
+        Returns:
+                - None
+        """
+        self.stream.stop()
+        self.current_frame = 0
+
+    def pause(self):
+        """
+        Description: Stops playing the audio of tracks in Loop with a sd Stream.
+        Args:
+                - None
+        Returns:
+                - None
+        """
+        self.stream.stop()
+
+    def set_is_recording(self, is_recording):
+        """
+        Description: Sets is_recording to True or False.
+        Args:
+                - is_recording: bool
+        Returns:
+                - None
+        """
+        self.is_recording = is_recording
+
+    def set_recording_track(self, track):
+        """
+        Description: Sets the track to record to.
+
+        Args:
+            - track: int (1-6)
+
+        Returns:
+            - None
+        """
+        self.recording_track = track
 
     @staticmethod
     def check_position(position) -> None:
@@ -274,3 +324,9 @@ if __name__ == "__main__":
     loop = Loop(loop_tracks=tracks)
     loop.is_recording = True
     loop.play()
+    sleep(2)
+    loop.stop()
+    sleep(1)
+    loop.play()
+    sleep(2)
+
