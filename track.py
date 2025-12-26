@@ -1,5 +1,6 @@
+import copy
 from dataclasses import dataclass
-from time import time
+from time import time, sleep
 from datetime import datetime
 import sounddevice as sd
 import numpy as np
@@ -9,6 +10,11 @@ import os
 assert np  # keeps linter from complaining np isn't directly called
 
 DEFAULT_TRACK_NAME = "New Track"
+SAMPLE_RATE = 44100
+DEFAULT_TRACK_SEC = 4
+DEFAULT_TRACK_LEN = SAMPLE_RATE * DEFAULT_TRACK_SEC
+DTYPE = 'float32'
+EMPTY_TRACK = np.full((DEFAULT_TRACK_LEN, 2), 0, dtype=DTYPE)
 
 
 @dataclass
@@ -23,21 +29,33 @@ class Track:
 
     def __init__(
         self,
-        track_name: str = DEFAULT_TRACK_NAME,
-        channel_config=1,
+        track_name=DEFAULT_TRACK_NAME,
+        channel_config=2,
         reverse_track=False,
         time_dilation=0,
         pitch_modulation=0,
+        track_filepath=None
     ):
         # track attributes
         self.track_name = track_name
         self.track_birth = datetime.now()
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
-        self.track_state = "STOP"
         self.track_volume = 1.0
         self.channel_config = channel_config
         self.track_birth = time()  # format is seconds since Unix epoch
-        self.track_filepath = self.generate_track_path()
+
+        # Create track_filepath if necessary and get track data
+        if track_filepath is None:
+            self.track_filepath = self.generate_track_path()
+            self.track_data = copy.copy(EMPTY_TRACK)
+        else:
+            self.track_filepath = track_filepath
+            data, self.track_fs = sf.read(track_filepath, always_2d=True)
+            if len(data) > DEFAULT_TRACK_LEN:
+                self.track_data = data[:DEFAULT_TRACK_LEN]
+            else:
+                self.track_data = copy.copy(EMPTY_TRACK)
+                self.track_data[:len(data)] = data
 
         # effects
         self.is_reversed = reverse_track
@@ -45,9 +63,7 @@ class Track:
         self.pitch_modulation = pitch_modulation
 
     def __repr__(self):
-        name = self.track_name if self.track_name else self.track_id
-        filename = getattr(self, 'track_filename', 'None')
-        return f"Track(id={self.track_id}, name={name}, .wav file={filename})"
+        return f"Track(id={self.track_id}, name={self.track_name}, .wav file={self.track_filepath})"
 
     def generate_track_path(self) -> str:
         """
@@ -74,7 +90,11 @@ class Track:
         os.makedirs(waveforms_dir, exist_ok=True)
         os.makedirs(wav_images_dir, exist_ok=True)
 
-        return os.path.join(recordings_dir, file_name)
+        # Create a wav file
+        filepath = os.path.join(recordings_dir, file_name)
+        sf.write(filepath, [], SAMPLE_RATE)
+
+        return filepath
 
     def get_volume(self):
         """
@@ -211,3 +231,11 @@ class Track:
         Returns: None
         """
         self.track_name = track_name
+
+
+if __name__ == "__main__":
+    track = Track(track_filepath="./projects/recordings/scale.aif")
+    sd.play(track.track_data, SAMPLE_RATE)
+    sleep(6)
+    print(track)
+    print(track.track_filepath)

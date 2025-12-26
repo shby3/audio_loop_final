@@ -1,8 +1,15 @@
 from datetime import datetime
 import os
+from track import Track
+import numpy as np
+import sounddevice as sd
+from time import sleep
 
 DEFAULT_LOOP_NAME = "New Loop"
 VALID_POSITIONS = [x for x in range(1, 7)]
+SAMPLE_RATE = 44100
+DEFAULT_LOOP_SEC = 4
+DEFAULT_LOOP_LEN = SAMPLE_RATE * DEFAULT_LOOP_SEC
 
 
 class Loop:
@@ -18,16 +25,12 @@ class Loop:
         keys 1-6 and values of tracks associated with that track number.
         - loop_length(int): The length of the loop, in seconds.
         Also is the longest track length.
-        - displayed_loop_name(str): The displayed name of the loop,
-        user defined.
-        - is_selected (bool): Whether the loop is currently selected.
         - loop_elapsed_secs (int): The elapsed time of the loop
             (the longest track).
         - loop_birth(str): The birth of the loop, in epochs.
 
     Methods:
         - check_position(int): Checks if the given position is valid.
-        - is_empty(): Checks if the loop is empty or not.
         - get_track_list(): Gets a list of Track objects in the loop.
         - get_loop_display_name(): Returns the display name of the loop.
         - set_loop_display_name(str): Sets the display name of the loop.
@@ -37,13 +40,9 @@ class Loop:
         - move_track(int, int): Move a track to specified position
         - alter_track(func):
         Uses a Track method to alter a Track in the Loop.
-        - set_loop_length(int): Sets the length of the loop, in seconds.
-        - set_loop_elapsed_secs(int): Sets the elapsed time of the loop
-        - get_loop_length(int): Gets the length of the loop, in seconds.
         - get_loop_selection(bool): Returns if loop is currently selected.
         - toggle_selection(): Toggles selection.
         - get_loop_id(): Returns the ID of the loop currently selected.
-        - update_loop() TODO
 
     Relationship(s):
         -
@@ -64,20 +63,23 @@ class Loop:
         self.loop_birth = datetime.now()
         self._loop_id = f"Loop_{self.loop_birth.strftime("%Y%m%d%H%M%S")}"
         self.loop_name = loop_name
-        self.is_selected = False
-        self.loop_elapsed_secs = 0
-        self.loop_length = 0
+        self.current_frame = 0
+        self.is_recording = False
+        self.recording_track = 1
+
         if loop_tracks is None:
             self.loop_tracks = {
-                1: None,
-                2: None,
-                3: None,
-                4: None,
-                5: None,
-                6: None,
+                1: Track(track_name="Track 1"),
+                2: Track(track_name="Track 2"),
+                3: Track(track_name="Track 3"),
+                4: Track(track_name="Track 4"),
+                5: Track(track_name="Track 5"),
+                6: Track(track_name="Track 6"),
             }
         else:
             self.loop_tracks = loop_tracks
+
+        self.stream = sd.Stream(samplerate=SAMPLE_RATE, callback=self._callback)
 
     def __repr__(self):
         lines = [f"Loop ID: {self._loop_id}", f"Name: {self.loop_name}"]
@@ -85,6 +87,40 @@ class Loop:
             track = self.loop_tracks[pos]
             lines.append(f"Track {pos}: {track if track else 'Empty'}")
         return "\n".join(lines)
+
+    def _callback(self, indata, outdata, frames, time, status):
+        if status:
+            print(status)
+        # Chunksize is the number of frames in indata/outdata or the frames
+        # remaining in the audio data.
+        chunksize = min(DEFAULT_LOOP_LEN - self.current_frame, frames)
+
+        end_frame = self.current_frame + chunksize
+        # Output chunksize frames to be processed
+        outdata[:chunksize] = sum(
+            track.track_data[self.current_frame:end_frame] for track in self.loop_tracks.values()
+        )
+
+        # Record to the recording track if recording is on
+        if self.is_recording:
+            self.loop_tracks[self.recording_track].track_data[self.current_frame:end_frame] += indata[:chunksize]
+
+        # If the length of audio data was output, output the remaining frames
+        # starting and start at the beginning.
+        if chunksize < frames:
+            end_frame = frames - chunksize
+            outdata[chunksize:] = sum(
+                track.track_data[:end_frame] for track in self.loop_tracks.values()
+            )
+            self.current_frame = end_frame
+            if self.is_recording:
+                self.loop_tracks[self.recording_track].track_data[:end_frame] += indata[chunksize:frames+chunksize]
+        else:
+            self.current_frame += chunksize
+
+    def play(self):
+        with self.stream:
+            sleep(100)
 
     @staticmethod
     def check_position(position) -> None:
@@ -99,17 +135,6 @@ class Loop:
             raise ValueError("Invalid position")
         else:
             return position
-
-    def is_empty(self) -> bool:
-        """
-        Description: Checks if the loop is empty or not.
-        Args: None
-        Returns: bool - True if the loop is empty, False otherwise.
-
-        Relationships:
-            - Used by the Controller to check if a Loop cannot be played.
-        """
-        return all(track is None for track in self.loop_tracks.values())
 
     def get_track_list(self) -> object:
         """
@@ -226,57 +251,6 @@ class Loop:
         else:
             self.loop_tracks[position].track_func(params)
 
-    def set_loop_length(self, length: int) -> None:
-        """
-        Description: Sets a loop's length.
-        Args:
-            -length(int): The length of the loop, in seconds.
-        Returns: None
-
-        Relationships:
-            - Sets the length of the loop which is also the longest track.
-        """
-        if length < 0:
-            raise ValueError("Invalid length")
-        self.loop_length = max(length, self.loop_length)
-
-    def set_loop_elapsed_secs(self, time) -> None:
-        """
-        Description: Sets the elapsed time of the loop.
-        Args:
-            -length(int): The length of the loop, in seconds.
-        Returns: None
-        """
-        self.loop_elapsed_secs = time
-
-    def get_loop_elapsed_secs(self, time) -> int:
-        """
-        Description: Returns the elapsed time of the loop.
-        Args:
-            - None
-        Returns: elapsed time in seconds
-        """
-        return self.loop_elapsed_secs
-
-    def get_loop_selection(self) -> bool:
-        """
-        Description: Returns if loop is selected.
-        Args:
-            - None
-        Returns: boolean
-        """
-        return self.is_selected
-
-    def toggle_selection(self) -> None:
-        """
-        Description: Changes boolean to reflect if loop is selected.
-        Args:
-            - None
-        Returns:
-            - None
-        """
-        self.is_selected = not self.is_selected
-
     def get_loop_id(self) -> str:
         """
         Description: Returns the loop's ID.
@@ -287,8 +261,16 @@ class Loop:
         """
         return self._loop_id
 
-    def update_loop(self):
-        """
-        TODO
-        """
-        pass
+
+if __name__ == "__main__":
+    tracks = {
+        1: Track(track_name="Track 1"),
+        2: Track(track_name="Track 2", track_filepath="./projects/recordings/kick.aif"),
+        3: Track(track_name="Track 3", track_filepath="./projects/recordings/snare.aif"),
+        4: Track(track_name="Track 4", track_filepath="./projects/recordings/scale.aif"),
+        5: Track(track_name="Track 5"),
+        6: Track(track_name="Track 6")
+    }
+    loop = Loop(loop_tracks=tracks)
+    loop.is_recording = True
+    loop.play()
