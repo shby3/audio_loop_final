@@ -84,10 +84,10 @@ class MainWindow(QMainWindow):
         Relationship(s):
             - Calls make_toolbar(name, button_info)
         """
-        for toolbar_name, toolbar_dict, toolbar_position in Toolbars:
-            self.add_toolbar(toolbar_name, toolbar_dict, toolbar_position)
+        for toolbar_name, toolbar_dict, toolbar_position, bar_break in Toolbars:
+            self.add_toolbar(toolbar_name, toolbar_dict, toolbar_position, bar_break)
 
-    def add_toolbar(self, name: str, buttons: dict, position: str = "top"):
+    def add_toolbar(self, name: str, buttons: dict, position: str = "top", bar_break: str = False):
         """
         Description: Adds a toolbar to the main app window at the given
                      position.
@@ -123,3 +123,6 @@ class MainWindow(QMainWindow):
         toolbar = make_toolbar(name, buttons)
         toolbar.setMinimumSize(64, 32)  # prevents icon cut-off
         self.addToolBar(position, toolbar)
+
+        if bar_break:
+            self.addToolBarBreak(Qt.TopToolBarArea)

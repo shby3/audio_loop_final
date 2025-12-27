@@ -1,20 +1,3 @@
-"""
-+++------------------------------------------------------------------------+++
-Defines a Controller class and all related methods. Generally, this controller
-class is responsible for ingesting button mappings from the GUI, and passing
-validation efforts to our validation component.
-
-NOTE: This is a general scaffold of what this class will do, it still needs an
-incredible amount of documentation and commenting before it is finalized.
-
-TODO: Finish all doc-strings using dedicated templates.
-TODO: Currently missing "Clear Track", XF1, XF2, XF3, Solo, Mix,
---> and Volume as-well-as "Set Home", "Rename", and "Delete"
-
-Written by: Michelle Mann
-+++------------------------------------------------------------------------+++
-"""
-
 from datetime import datetime
 from loop import Loop
 import exceptions as e
@@ -191,7 +174,7 @@ class Controller:
     """
     def __init__(self):
         """
-        Initializes a audio loop station controller.
+        Initializes an audio loop station controller.
         """
         # Default channel config
         self.no_tracks = 1

@@ -43,7 +43,7 @@ class FileManager:
             - A dedicated file path mapped to a dataclass storage location.
         """
         if path is None:
-            path = f"{loop._loop_id}.loop"
+            path = f"{loop.loop_id}.loop"
 
         p = Path(path)
         # Serialize track objects to their file paths or None
@@ -63,13 +63,10 @@ class FileManager:
         data = {
             "loop_name": loop.loop_name,
             "loop_tracks": serialized_tracks,
-            "is_selected": loop.is_selected,
-            "loop_elapsed_secs": loop.loop_elapsed_secs,
-            "loop_length": loop.loop_length,
             "loop_birth": (loop.loop_birth.isoformat()
                            if hasattr(loop.loop_birth, 'isoformat')
                            else str(loop.loop_birth)),
-            "loop_id": loop._loop_id
+            "loop_id": loop.loop_id
         }
 
         p.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -121,7 +118,7 @@ class FileManager:
                     else:
                         full_track_path = loop_dir / track_path
                     loop.loop_tracks[int(pos)] = self.deserialize_track(
-                        str(full_track_path), loop._loop_id)
+                        str(full_track_path), loop.loop_id)
                 except FileNotFoundError:
                     # For testing: keep track path string if file missing
                     loop.loop_tracks[int(pos)] = track_path
@@ -132,7 +129,7 @@ class FileManager:
 
         # Use loop_id from JSON if available
         if "loop_id" in data:
-            loop._loop_id = data["loop_id"]
+            loop.loop_id = data["loop_id"]
 
         # Handle datetime deserialization
         from datetime import datetime
@@ -161,9 +158,6 @@ class FileManager:
         # Create Track object with correct constructor args
         track = Track(
             track_name=data.get("track_name", "New Track"),
-            assigned_loop=loop_id,
-            track_length_secs=data.get("track_length_secs", 10),
-            track_elapsed_secs=data.get("track_elapsed_secs", 0),
             channel_config=data.get("channel_config", 1),
             reverse_track=data.get("is_reversed", False),
             time_dilation=data.get("time_dilation", 0),
@@ -199,18 +193,14 @@ class FileManager:
         data = {
             "track_id": track.track_id,
             "track_name": track.track_name,
-            "track_length_secs": track.track_length_secs,
-            "track_elapsed_secs": track.track_elapsed_secs,
             "channel_config": track.channel_config,
-            "track_state": track.track_state,
             "track_volume": track.track_volume,
             "is_reversed": track.is_reversed,
             "time_dilation": track.time_dilation,
             "pitch_modulation": track.pitch_modulation,
             "track_birth": (track.track_birth.isoformat()
                             if hasattr(track.track_birth, 'isoformat')
-                            else str(track.track_birth)),
-            "assigned_loop": track.assigned_loop
+                            else str(track.track_birth))
         }
 
         p.write_text(json.dumps(data, indent=2), encoding="utf-8")

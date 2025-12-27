@@ -1,4 +1,6 @@
 from PySide6.QtGui import QKeySequence
+from loop import Loop
+from track import Track
 
 """
 +++------------------------------------------------------------------------+++
@@ -9,6 +11,9 @@ For example, the button mute_loop has a small standalone dictionary. The
 nested reference dictionary AllButtonsDict includes the key "mute_loop" and
 its value is a pointer to the mute_loop standalone dictionary.
 +++------------------------------------------------------------------------+++
+
+For now, Loops are maintained here so that button handlers can easily be connected
+to Loop and Track operations.
 """
 # defines public modules for importing between directories
 __all__ = [
@@ -24,13 +29,26 @@ import os
 # Get the directory of this file and construct the icon path
 ICON_PATH = os.path.join(os.path.dirname(__file__), "icon_src") + os.sep
 
+# New loop
+tracks = {
+        1: Track(track_name="Track 1"),
+        2: Track(track_name="Track 2", track_filepath="../projects/recordings/kick.aif"),
+        3: Track(track_name="Track 3", track_filepath="../projects/recordings/snare.aif"),
+        4: Track(track_name="Track 4", track_filepath="../projects/recordings/scale.aif"),
+        5: Track(track_name="Track 5"),
+        6: Track(track_name="Track 6")
+    }
+loop = Loop(loop_tracks=tracks)
 
-def default_handler(button_name: str):
+
+def default_handler(button_name: str, handler=None, args=None):
     """
     Description: Placeholder button action. Prints an informative statement
                  to the terminal when a button is pressed.
     Args:
         - button_name (str): The name of the button being pressed.
+        - handler (function): Additional function to be called
+        - args (list): Additional arguments to be passed to the handler
     Returns:
         - None.
     Relationship(s):
@@ -39,6 +57,8 @@ def default_handler(button_name: str):
     """
 
     print(button_name, " has been pressed.")
+    if handler is not None:
+        handler()
 
 
 """
@@ -71,14 +91,14 @@ area-specific reference dictionaries further in the document.
 """
 
 
-clear_tracks = {
-    "key": "clear_tracks",
-    "icon": (ICON_PATH + "clear_tracks_icon.svg"),
-    "tooltip": "Clear all tracks",
+clear_track = {
+    "key": "clear_track",
+    "icon": (ICON_PATH + "clear_track_icon.svg"),
+    "tooltip": "Clears the track",
     "action": None,
     "button": None,
     "shortcut": None,
-    "handler": lambda: default_handler("clear_tracks"),
+    "handler": lambda: default_handler("clear_track"),
 }
 
 delete_track = {
@@ -173,7 +193,7 @@ new_loop = {
 
 play_track = {
     "key": "play_track",
-    "icon": (ICON_PATH + "play_track_icon.svg"),
+    "icon": (ICON_PATH + "play_icon.svg"),
     "tooltip": "Play track",
     "action": None,
     "button": None,
@@ -183,12 +203,12 @@ play_track = {
 
 play_loop = {
     "key": "play_loop",
-    "icon": (ICON_PATH + "play_loop_icon.svg"),
+    "icon": (ICON_PATH + "play_icon.svg"),
     "tooltip": "Play loop",
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": lambda: default_handler("play_loop"),
+    "handler": lambda: default_handler("play_loop", loop.play),
 }
 
 record_track = {
@@ -213,12 +233,12 @@ redo = {
 
 stop_loop = {
     "key": "stop_loop",
-    "icon": (ICON_PATH + "stop_loop_icon.svg"),
+    "icon": (ICON_PATH + "stop_icon.svg"),
     "tooltip": "Stop loop",
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": lambda: default_handler("stop_loop"),
+    "handler": lambda: default_handler("stop_loop", loop.stop),
 }
 
 undo = {
@@ -230,6 +250,28 @@ undo = {
     "shortcut": QKeySequence.Undo,
     "handler": lambda: default_handler("undo"),
 }
+
+select_track = {
+    "key": "select_track",
+    "icon": (ICON_PATH + "record_icon.svg"),
+    "tooltip": "Select this track to record onto",
+    "action": None,
+    "button": None,
+    "shortcut": None,
+    "handler": lambda: default_handler("undo"),
+}
+
+
+def make_track_button(track_num, button_dict):
+    """
+    Take in an int 1-6 and a button dict and make the button specific to that
+    track. Return a new dict with a key for the track number.
+    """
+    new_dict = button_dict.copy()
+    new_dict["track"] = track_num
+    new_dict["handler"] = lambda: default_handler(f"{new_dict['key']} {track_num}")
+    return new_dict
+
 
 """
 +++------------------------------------------------------------------------+++
@@ -246,7 +288,7 @@ references buttons used to play/stop/record/etc. an audio track or loop.
 """
 
 AllButtonsDict = {
-    "clear_tracks": clear_tracks,
+    "clear_track": clear_track,
     "delete_track": delete_track,
     "delete_loop": delete_loop,
     "export_loop": export_loop,
@@ -262,19 +304,19 @@ AllButtonsDict = {
     "redo": redo,
     "stop_loop": stop_loop,
     "undo": undo,
+    "select_track": select_track,
 }
 
 TransportButtons = {
-    "play_track": play_track,
     "play_loop": play_loop,
     "record_track": record_track,
     "stop_loop": stop_loop,
 }
 
 TrackButtons = {
-    "clear_tracks": clear_tracks,
-    "delete_track": delete_track,
+    "clear_track": clear_track,
     "mute_track": mute_track,
+    "select_track": select_track
 }
 
 LoopButtons = {
@@ -292,8 +334,15 @@ List of tuples containing a toolbar's name, button dictionary, and desired
 window placement respectively.
 """
 Toolbars = [
-    ("Transport", TransportButtons, "bottom"),
-    ("Track", TrackButtons, "left"),
-    ("Loop", LoopButtons, "right"),
-    ("Utility", UtilityButtons, "top"),
+    ("Transport", TransportButtons, "bottom", True),
+    ("Utility", UtilityButtons, "top", True),
+    ("Loop", LoopButtons, "top", True),
 ]
+
+# Add a toolbar for each track
+for n in range(1, 7):
+    new_track_buttons = TrackButtons.copy()
+    for key in new_track_buttons.keys():
+        button = new_track_buttons[key]
+        new_track_buttons[key] = make_track_button(n, button)
+    Toolbars.append((f"Track {n}", new_track_buttons, "top", True))

@@ -61,7 +61,7 @@ class Loop:
         Returns: None
         """
         self.loop_birth = datetime.now()
-        self._loop_id = f"Loop_{self.loop_birth.strftime("%Y%m%d%H%M%S")}"
+        self.loop_id = f"Loop_{self.loop_birth.strftime("%Y%m%d%H%M%S")}"
         self.loop_name = loop_name
         self.current_frame = 0
         self.is_recording = False
@@ -82,7 +82,7 @@ class Loop:
         self.stream = sd.Stream(samplerate=SAMPLE_RATE, callback=self._callback)
 
     def __repr__(self):
-        lines = [f"Loop ID: {self._loop_id}", f"Name: {self.loop_name}"]
+        lines = [f"Loop ID: {self.loop_id}", f"Name: {self.loop_name}"]
         for pos in range(1, 7):
             track = self.loop_tracks[pos]
             lines.append(f"Track {pos}: {track if track else 'Empty'}")
@@ -309,24 +309,25 @@ class Loop:
         Returns:
             - loop_id (str)
         """
-        return self._loop_id
+        return self.loop_id
 
 
 if __name__ == "__main__":
-    tracks = {
-        1: Track(track_name="Track 1"),
-        2: Track(track_name="Track 2", track_filepath="./projects/recordings/kick.aif"),
-        3: Track(track_name="Track 3", track_filepath="./projects/recordings/snare.aif"),
-        4: Track(track_name="Track 4", track_filepath="./projects/recordings/scale.aif"),
-        5: Track(track_name="Track 5"),
-        6: Track(track_name="Track 6")
-    }
-    loop = Loop(loop_tracks=tracks)
-    loop.is_recording = True
-    loop.play()
-    sleep(2)
-    loop.stop()
-    sleep(1)
-    loop.play()
-    sleep(2)
+    print("")
+    # tracks = {
+    #     1: Track(track_name="Track 1"),
+    #     2: Track(track_name="Track 2", track_filepath="./projects/recordings/kick.aif"),
+    #     3: Track(track_name="Track 3", track_filepath="./projects/recordings/snare.aif"),
+    #     4: Track(track_name="Track 4", track_filepath="./projects/recordings/scale.aif"),
+    #     5: Track(track_name="Track 5"),
+    #     6: Track(track_name="Track 6")
+    # }
+    # loop = Loop(loop_tracks=tracks)
+    # loop.is_recording = True
+    # loop.play()
+    # sleep(2)
+    # loop.stop()
+    # sleep(1)
+    # loop.play()
+    # sleep(2)
 

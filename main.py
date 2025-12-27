@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QApplication
-from .gui_src.windows import MainWindow
+from src.gui_src.windows import MainWindow
 import sys
+from loop import Loop
+from track import Track
 
 """
 +++------------------------------------------------------------------------+++
