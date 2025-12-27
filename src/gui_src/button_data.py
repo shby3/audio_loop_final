@@ -41,7 +41,7 @@ tracks = {
 loop = Loop(loop_tracks=tracks)
 
 
-def default_handler(button_name: str, handler=None, args=None):
+def default_handler(button_name: str, handler=None):
     """
     Description: Placeholder button action. Prints an informative statement
                  to the terminal when a button is pressed.
@@ -56,9 +56,32 @@ def default_handler(button_name: str, handler=None, args=None):
           dictionaries.
     """
 
-    print(button_name, " has been pressed.")
+    print(f"{button_name} pressed.")
     if handler is not None:
         handler()
+
+
+def make_track_button(track_num, button_dict):
+    """
+    Take in an int 1-6 and a button dict and make the button specific to that
+    track. Return a new dict with a key for the track number.
+    """
+    new_dict = button_dict.copy()
+    new_dict["track"] = track_num
+
+    # Take function given from dict but utilize track number
+    def new_handler():
+        default_handler(f"{new_dict['key']} {track_num}")
+        button_dict["handler"](track_num)
+    # Have new handler print track number and handle it
+    new_dict["handler"] = new_handler
+    return new_dict
+
+
+def handle_record():
+    loop.is_recording = not loop.is_recording
+    default_handler("record_loop")
+    print(f"Loop recording = {loop.is_recording}")
 
 
 """
@@ -211,14 +234,14 @@ play_loop = {
     "handler": lambda: default_handler("play_loop", loop.play),
 }
 
-record_track = {
-    "key": "record_track",
+record_loop = {
+    "key": "record_loop",
     "icon": (ICON_PATH + "record_icon.svg"),
-    "tooltip": "Record track",
+    "tooltip": "Record loop",
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+R"),
-    "handler": lambda: handle_record(5),
+    "handler": handle_record,
 }
 
 redo = {
@@ -254,23 +277,12 @@ undo = {
 select_track = {
     "key": "select_track",
     "icon": (ICON_PATH + "record_icon.svg"),
-    "tooltip": "Select this track to record onto",
+    "tooltip": "Select this track for recording",
     "action": None,
     "button": None,
     "shortcut": None,
-    "handler": lambda: default_handler("undo"),
+    "handler": loop.set_recording_track,
 }
-
-
-def make_track_button(track_num, button_dict):
-    """
-    Take in an int 1-6 and a button dict and make the button specific to that
-    track. Return a new dict with a key for the track number.
-    """
-    new_dict = button_dict.copy()
-    new_dict["track"] = track_num
-    new_dict["handler"] = lambda: default_handler(f"{new_dict['key']} {track_num}")
-    return new_dict
 
 
 """
@@ -300,7 +312,7 @@ AllButtonsDict = {
     "new_loop": new_loop,
     "play_track": play_track,
     "play_loop": play_loop,
-    "record_track": record_track,
+    "record_loop": record_loop,
     "redo": redo,
     "stop_loop": stop_loop,
     "undo": undo,
@@ -309,7 +321,7 @@ AllButtonsDict = {
 
 TransportButtons = {
     "play_loop": play_loop,
-    "record_track": record_track,
+    "record_loop": record_loop,
     "stop_loop": stop_loop,
 }
 
