@@ -34,7 +34,7 @@ class Track:
         reverse_track=False,
         time_dilation=0,
         pitch_modulation=0,
-        project_filepath="..",
+        project_path="..",
         track_filepath=None
     ):
         # track attributes
@@ -43,7 +43,7 @@ class Track:
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
         self.track_volume = 1.0
         self.channel_config = channel_config
-        self.project_filepath = project_filepath
+        self.project_path = project_path
         self.track_filepath = track_filepath
 
         # Get track data
@@ -80,7 +80,7 @@ class Track:
         file_name = f"track_{self.track_birth}.wav"
 
         # Create a wav file
-        filepath = os.path.join(self.project_filepath, file_name)
+        filepath = os.path.join(self.project_path, file_name)
         sf.write(filepath, self.track_data, SAMPLE_RATE)
         # Set new filepath for Track
         self.track_filepath = filepath

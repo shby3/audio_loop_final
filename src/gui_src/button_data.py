@@ -1,6 +1,7 @@
 from PySide6.QtGui import QKeySequence
 from loop import Loop
 from track import Track
+from file_manager import FileManager
 
 """
 +++------------------------------------------------------------------------+++
@@ -30,15 +31,21 @@ import os
 ICON_PATH = os.path.join(os.path.dirname(__file__), "icon_src") + os.sep
 
 # New loop
+file_manager = FileManager()
 tracks = {
-        1: Track(track_name="Track 1", project_filepath="../projects/loops"),
+        1: Track(track_name="Track 1", project_path="../projects/loops"),
         2: Track(track_name="Track 2", track_filepath="../projects/samples/kick.aif"),
         3: Track(track_name="Track 3", track_filepath="../projects/samples/snare.aif"),
         4: Track(track_name="Track 4", track_filepath="../projects/samples/scale.aif"),
         5: Track(track_name="Track 5", track_filepath="../projects/samples/hat.aif"),
-        6: Track(track_name="Track 6", project_filepath="../projects/loops"),
+        6: Track(track_name="Track 6", project_path="../projects/loops"),
     }
 loop = Loop(loop_tracks=tracks)
+print(loop)
+p = file_manager.serialize_loop(loop)
+loop = file_manager.deserialize_loop(p)
+print(loop)
+
 
 # Tracks recorded onto when loop was last playing. When record is stopped, these are cleared
 # and saved to files.

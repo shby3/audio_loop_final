@@ -49,16 +49,12 @@ class FileManager:
         # Serialize track objects to their file paths or None
         serialized_tracks = {}
         for pos, track in loop.loop_tracks.items():
-            if track is None:
-                serialized_tracks[pos] = None
-            else:
-                # Store track path relative to Tracks folder
-                track_path = getattr(track, 'file_path', str(track))
-                if 'Tracks' in track_path:
-                    # Extract just the filename from the full path
-                    serialized_tracks[pos] = Path(track_path).name
-                else:
-                    serialized_tracks[pos] = track_path
+            track_data = {
+                "name": track.track_name, "id": track.track_id,
+                "filepath": track.track_filepath,
+                "project_path": track.project_path
+            }
+            serialized_tracks[pos] = track_data
 
         data = {
             "loop_name": loop.loop_name,
@@ -106,26 +102,12 @@ class FileManager:
         else:
             tracks_dir = loop_dir / "Tracks"
 
-        for pos, track_path in data["loop_tracks"].items():
-            if track_path is None:
-                loop.loop_tracks[int(pos)] = None
-            else:
-                try:
-                    # Look for tracks in Tracks subfolder first, then fallback
-                    # to loop directory
-                    if (tracks_dir / track_path).exists():
-                        full_track_path = tracks_dir / track_path
-                    else:
-                        full_track_path = loop_dir / track_path
-                    loop.loop_tracks[int(pos)] = self.deserialize_track(
-                        str(full_track_path), loop.loop_id)
-                except FileNotFoundError:
-                    # For testing: keep track path string if file missing
-                    loop.loop_tracks[int(pos)] = track_path
-
-        loop.is_selected = data["is_selected"]
-        loop.loop_elapsed_secs = data["loop_elapsed_secs"]
-        loop.loop_length = data["loop_length"]
+        for pos, track_data in data["loop_tracks"].items():
+            try:
+                loop.loop_tracks[int(pos)] = Track(track_filepath=track_data["filepath"])
+            except FileNotFoundError:
+                # For testing: keep track path string if file missing
+                loop.loop_tracks[int(pos)] = Track()
 
         # Use loop_id from JSON if available
         if "loop_id" in data:

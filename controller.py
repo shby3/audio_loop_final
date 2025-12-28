@@ -1,4 +1,6 @@
 from datetime import datetime
+
+import file_manager
 from loop import Loop
 import exceptions as e
 import os
@@ -205,7 +207,7 @@ class Controller:
         self.audio_processor = None
         self.audio_buffer = None
         self.audio_player = None
-        self.file_manager = None
+        self.file_manager = file_manager.FileManager()
         self.content_list = None
 
         # Specific mode toggles - changes to specific modes:
