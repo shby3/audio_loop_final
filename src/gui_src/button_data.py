@@ -1,7 +1,10 @@
 from PySide6.QtGui import QKeySequence
+from copy import deepcopy
+from functools import partial
 from loop import Loop
 from track import Track
 from file_manager import FileManager
+from controller import Controller
 
 """
 +++------------------------------------------------------------------------+++
@@ -30,23 +33,6 @@ import os
 # Get the directory of this file and construct the icon path
 ICON_PATH = os.path.join(os.path.dirname(__file__), "icon_src") + os.sep
 
-# New loop
-file_manager = FileManager()
-tracks = {
-        1: Track(track_name="Track 1", project_path="../projects/loops"),
-        2: Track(track_name="Track 2", track_filepath="../projects/samples/kick.aif"),
-        3: Track(track_name="Track 3", track_filepath="../projects/samples/snare.aif"),
-        4: Track(track_name="Track 4", track_filepath="../projects/samples/scale.aif"),
-        5: Track(track_name="Track 5", track_filepath="../projects/samples/hat.aif"),
-        6: Track(track_name="Track 6", project_path="../projects/loops"),
-    }
-loop = Loop(loop_tracks=tracks)
-print(loop)
-p = file_manager.serialize_loop(loop)
-loop = file_manager.deserialize_loop(p)
-print(loop)
-
-
 # Tracks recorded onto when loop was last playing. When record is stopped, these are cleared
 # and saved to files.
 recorded_tracks = []
@@ -72,50 +58,36 @@ def default_handler(button_name: str, handler=None):
         handler()
 
 
-def make_track_button(track_num, button_dict):
-    """
-    Take in an int 1-6 and a button dict and make the button specific to that
-    track. Return a new dict with a key for the track number.
-    """
-    new_dict = button_dict.copy()
-    new_dict["track"] = track_num
-
-    # Take function given from dict but utilize track number
-    def new_handler():
-        default_handler(f"{new_dict['key']} {track_num}")
-        button_dict["handler"](track_num)
-    # Have new handler print track number and handle it
-    new_dict["handler"] = new_handler
-    return new_dict
-
-
-def handle_record():
+def handle_record(button_dict):
     default_handler("record_loop")
+    loop = button_dict["controller"].loop
     loop.is_recording = not loop.is_recording
     if loop.is_playing:
         recorded_tracks.append(loop.recording_track)
     print(f"Loop recording = {loop.is_recording}")
 
 
-def handle_play():
+def handle_play(button_dict):
     default_handler("play_loop")
+    loop = button_dict["controller"].loop
     loop.play()
     if loop.is_recording:
         recorded_tracks.append(loop.recording_track)
 
 
-def handle_stop():
+def handle_stop(button_dict):
     default_handler("stop_loop")
-    print(recorded_tracks)
+    loop = button_dict["controller"].loop
     while len(recorded_tracks) > 0:
         t = recorded_tracks.pop()
         loop.get_track(t).generate_track_file()
     loop.stop()
 
 
-def handle_select_track(track):
-    default_handler(f"select_track {track}")
-    loop.set_recording_track(track)
+def handle_select_track(button_dict):
+    default_handler(f"select_track {button_dict["track"]}")
+    loop = button_dict["controller"].loop
+    loop.set_recording_track(button_dict["track"])
     if loop.is_recording and loop.is_playing:
         recorded_tracks.append(loop.recording_track)
 
@@ -158,6 +130,8 @@ clear_track = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("clear_track"),
+    "controller": None,
+    "track": None,
 }
 
 delete_track = {
@@ -168,6 +142,7 @@ delete_track = {
     "button": None,
     "shortcut": QKeySequence.Delete,
     "handler": lambda: default_handler("delete_track"),
+    "controller": None,
 }
 
 delete_loop = {
@@ -178,6 +153,7 @@ delete_loop = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("delete_loop"),
+    "controller": None,
 }
 
 export_loop = {
@@ -188,6 +164,7 @@ export_loop = {
     "button": None,
     "shortcut": QKeySequence.Save,
     "handler": lambda: default_handler("export_loop"),
+    "controller": None,
 }
 
 help_menu = {
@@ -198,6 +175,7 @@ help_menu = {
     "button": None,
     "shortcut": QKeySequence.HelpContents,
     "handler": lambda: default_handler("help_menu"),
+    "controller": None,
 }
 
 loop_menu = {
@@ -208,6 +186,7 @@ loop_menu = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("loop_menu"),
+    "controller": None,
 }
 
 mute_track = {
@@ -218,6 +197,8 @@ mute_track = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("mute_track"),
+    "controller": None,
+    "track": None,
 }
 
 mute_loop = {
@@ -228,6 +209,7 @@ mute_loop = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("mute_loop"),
+    "controller": None,
 }
 
 name_track = {
@@ -238,6 +220,7 @@ name_track = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("name_track"),
+    "controller": None,
 }
 
 new_loop = {
@@ -248,6 +231,7 @@ new_loop = {
     "button": None,
     "shortcut": QKeySequence.New,
     "handler": lambda: default_handler("new_loop"),
+    "controller": None,
 }
 
 play_track = {
@@ -258,6 +242,7 @@ play_track = {
     "button": None,
     "shortcut": None,
     "handler": lambda: default_handler("play_track"),
+    "controller": None,
 }
 
 play_loop = {
@@ -267,7 +252,8 @@ play_loop = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": handle_play,
+    "handler": lambda: handle_play(play_loop),
+    "controller": None,
 }
 
 record_loop = {
@@ -277,7 +263,8 @@ record_loop = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+R"),
-    "handler": handle_record,
+    "handler": lambda: handle_record(record_loop),
+    "controller": None,
 }
 
 redo = {
@@ -288,6 +275,7 @@ redo = {
     "button": None,
     "shortcut": QKeySequence.Redo,
     "handler": lambda: default_handler("redo"),
+    "controller": None,
 }
 
 stop_loop = {
@@ -297,7 +285,8 @@ stop_loop = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": handle_stop,
+    "handler": lambda: handle_stop(stop_loop),
+    "controller": None,
 }
 
 undo = {
@@ -308,16 +297,19 @@ undo = {
     "button": None,
     "shortcut": QKeySequence.Undo,
     "handler": lambda: default_handler("undo"),
+    "controller": None,
 }
 
 select_track = {
     "key": "select_track",
     "icon": (ICON_PATH + "record_icon.svg"),
     "tooltip": "Select this track for recording",
-    "action": None,
+    "action": handle_select_track,
     "button": None,
     "shortcut": None,
-    "handler": handle_select_track,
+    "handler": None,
+    "controller": None,
+    "track": None,
 }
 
 
@@ -362,9 +354,7 @@ TransportButtons = {
 }
 
 TrackButtons = {
-    "clear_track": clear_track,
-    "mute_track": mute_track,
-    "select_track": select_track
+    "select_track": select_track,
 }
 
 LoopButtons = {
@@ -387,10 +377,18 @@ Toolbars = [
     ("Loop", LoopButtons, "top", True),
 ]
 
-# Add a toolbar for each track
+# Add a toolbar for each track. Copy 6 of them with added track number.
 for n in range(1, 7):
-    new_track_buttons = TrackButtons.copy()
-    for key in new_track_buttons.keys():
-        button = new_track_buttons[key]
-        new_track_buttons[key] = make_track_button(n, button)
+    new_track_buttons = deepcopy(TrackButtons)
+    for button_dict in new_track_buttons.values():
+        # Add track number to button dict key
+        button_dict["key"] = f"{button_dict["key"]}_{n}"
+        # Add track number to button dict
+        button_dict["track"] = n
+        # Update handler for button dict
+        button_dict["handler"] = partial(button_dict["action"], button_dict)
+        # Add button_dict to AllButtonsDict
+        AllButtonsDict[button_dict["key"]] = button_dict
+
+    # Add track toolbar to toolbars
     Toolbars.append((f"Track {n}", new_track_buttons, "top", True))

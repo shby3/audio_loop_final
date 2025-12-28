@@ -43,9 +43,13 @@ class FileManager:
             - A dedicated file path mapped to a dataclass storage location.
         """
         if path is None:
-            path = f"{loop.loop_id}.loop"
-
+            path = f"../projects/loops/{loop.loop_id}/{loop.loop_id}.loop"
         p = Path(path)
+
+        # Make project directory
+        d = Path(f"../projects/loops/{loop.loop_id}")
+        d.mkdir(exist_ok=True)
+
         # Serialize track objects to their file paths or None
         serialized_tracks = {}
         for pos, track in loop.loop_tracks.items():
@@ -95,12 +99,6 @@ class FileManager:
 
         # Maps the loop data - deserialize track paths to Track objects
         loop_dir = Path(path).parent
-
-        # If loop is in Loops subfolder, look for Tracks at same level
-        if loop_dir.name == "Loops":
-            tracks_dir = loop_dir.parent / "Tracks"
-        else:
-            tracks_dir = loop_dir / "Tracks"
 
         for pos, track_data in data["loop_tracks"].items():
             try:

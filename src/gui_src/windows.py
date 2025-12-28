@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
     Description:
         - Represents the main window of the application.
     Args:
-        - None.
+        - controller (object): the Controller object to use with the GUI.
     Methods:
         - add_buttons():  Adds buttons to the main window layout.
         - add_menu_bar(): Adds actions to the app's  main menu bar.
@@ -34,8 +34,9 @@ class MainWindow(QMainWindow):
         - Called from main()
     """
 
-    def __init__(self):
+    def __init__(self, controller):
         super().__init__()
+        self.controller = controller
         self.setWindowTitle("Audio Looper v1.0")
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
@@ -54,7 +55,7 @@ class MainWindow(QMainWindow):
         Relationship(s):
             - Uses the info from AllButtonsDict to create buttons.
         """
-        buttons = make_buttons_list(AllButtonsDict.copy())
+        buttons = make_buttons_list(AllButtonsDict.copy(), self.controller)
         for button in buttons:
             self.layout.addWidget(button)
 
@@ -120,7 +121,7 @@ class MainWindow(QMainWindow):
         else:
             position = valid_positions[position]
 
-        toolbar = make_toolbar(name, buttons)
+        toolbar = make_toolbar(name, buttons, self.controller)
         toolbar.setMinimumSize(64, 32)  # prevents icon cut-off
         self.addToolBar(position, toolbar)
 

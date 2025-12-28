@@ -23,7 +23,7 @@ BUTTON_WIDTH = 32
 BUTTON_HEIGHT = 32
 
 
-def make_base_button(button_info: dict):
+def make_base_button(button_info: dict, controller: object):
     """
     Description:
         - Takes a dictionary containing a button's info and uses it to
@@ -32,6 +32,7 @@ def make_base_button(button_info: dict):
         - button_info (dict): Stores button info.
                               Keys: "key", "icon", "tooltip", "action",
                                     "button", "shortcut", "handler"
+        - controller (Controller): Controller that connects buttons to Loops.
     Returns:
         - wrapper (ButtonWrapper): A deployable button contained in a QWidget.
     Relationship(s):
@@ -50,10 +51,12 @@ def make_base_button(button_info: dict):
     button_name = button_info["key"]
     # store button object in original reference dictionary for later use
     AllButtonsDict[button_name]["button"] = button
+    # store Controller object in button dictionary for handlers to use
+    button_info["controller"] = controller
     return wrapper
 
 
-def make_buttons_list(buttons_dict: dict):
+def make_buttons_list(buttons_dict: dict, controller: object):
     """
     Description: Takes a reference dictionary containing pointers to a group
                  of buttons' standalone dictionaries and returns a list of
@@ -62,6 +65,7 @@ def make_buttons_list(buttons_dict: dict):
         - buttons_dict (dict): A nested reference dictionary containing
                                pointers to separate button dictionaries.
                                Keys: button name, Values: button dictionary
+        - controller (object): The Controller object that connects buttons to Loops.
     Returns:
         - buttons_list (list): A list of deployable BaseButton objects.
     Relationship(s):
@@ -69,6 +73,6 @@ def make_buttons_list(buttons_dict: dict):
     """
     buttons_list = []  # stores button objects
     for ___, button_dict in buttons_dict.items():
-        button = make_base_button(button_dict)
+        button = make_base_button(button_dict, controller)
         buttons_list.append(button)
     return buttons_list

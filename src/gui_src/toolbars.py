@@ -12,19 +12,20 @@ manipulate, and implement toolbars and their associated actions.
 __all__ = ["make_toolbar"]
 
 
-def make_toolbar(name: str, buttons_info: dict):
+def make_toolbar(name: str, buttons_info: dict, controller: object):
     """
     Description: Takes a nested dictionary containing entries for a group
                  of buttons' and adds them to a single toolbar.
     Args:
         - name (str): Name of the toolbar
         - buttons_info (dict): stores entries for a group of related buttons
+        - controller (Controller): Controller that connects buttons to Loops
     Returns:
         - toolbar (QToolBar): a deployable toolbar object
     Relationship(s):
         - Called from MainWindow class.
     """
-    buttons = make_buttons_list(buttons_info)
+    buttons = make_buttons_list(buttons_info, controller)
     toolbar = QToolBar()
     label = QLabel(name)
     label.setStyleSheet("font-weight: bold; margin-right: 8px;")
