@@ -96,10 +96,11 @@ class Loop:
         chunksize = min(DEFAULT_LOOP_LEN - self.current_frame, frames)
 
         end_frame = self.current_frame + chunksize
-        # Output chunksize frames to be processed
-        outdata[:chunksize] = sum(
+        # Output chunksize frames to be processed, limiting the values to avoid audio clipping
+        out = sum(
             track.track_data[self.current_frame:end_frame] for track in self.loop_tracks.values()
         )
+        outdata[:chunksize] = np.clip(out, -1.0, 1.0)
 
         # Record to the recording track if recording is on
         if self.is_recording:
@@ -109,9 +110,10 @@ class Loop:
         # starting and start at the beginning.
         if chunksize < frames:
             end_frame = frames - chunksize
-            outdata[chunksize:] = sum(
+            out = sum(
                 track.track_data[:end_frame] for track in self.loop_tracks.values()
             )
+            outdata[chunksize:] = np.clip(out, -1.0, 1.0)
             self.current_frame = end_frame
             if self.is_recording:
                 self.loop_tracks[self.recording_track].track_data[:end_frame] += indata[chunksize:frames+chunksize]
@@ -316,9 +318,9 @@ if __name__ == "__main__":
     print("")
     # tracks = {
     #     1: Track(track_name="Track 1"),
-    #     2: Track(track_name="Track 2", track_filepath="./projects/recordings/kick.aif"),
-    #     3: Track(track_name="Track 3", track_filepath="./projects/recordings/snare.aif"),
-    #     4: Track(track_name="Track 4", track_filepath="./projects/recordings/scale.aif"),
+    #     2: Track(track_name="Track 2", track_filepath="./projects/samples/kick.aif"),
+    #     3: Track(track_name="Track 3", track_filepath="./projects/samples/snare.aif"),
+    #     4: Track(track_name="Track 4", track_filepath="./projects/samples/scale.aif"),
     #     5: Track(track_name="Track 5"),
     #     6: Track(track_name="Track 6")
     # }
