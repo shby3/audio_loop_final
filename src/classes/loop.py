@@ -318,6 +318,16 @@ class Loop:
             track2, track1
         print(f"Tracks {position_1} and {position_2} have been swapped")
 
+    def reverse_track(self, position: int) -> None:
+        """
+        Description: Reverses the track position in the Loop, if the Loop is not playing.
+
+        Args:
+            position (int): The position of the track to reverse
+        """
+        if not self.is_playing:
+            self.loop_tracks[position].reverse()
+
     def alter_track(self, position, track_func, params=None) -> None:
         """
         Description: Uses a Track method to alter a Track in the Loop.

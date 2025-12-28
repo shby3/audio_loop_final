@@ -32,7 +32,6 @@ class Track:
         self,
         track_name=DEFAULT_TRACK_NAME,
         channel_config=2,
-        reverse_track=False,
         time_dilation=0,
         pitch_modulation=0,
         project_path="..",
@@ -59,7 +58,6 @@ class Track:
                 self.track_data[:len(data)] = data
 
         # effects
-        self.is_reversed = reverse_track
         self.time_dilation = time_dilation
         self.pitch_modulation = pitch_modulation
 
@@ -122,30 +120,13 @@ class Track:
             Exception("Volume must be between 0.0 and 1.0")
         self.track_volume = volume
 
-    def get_reverse(self):
+    def reverse(self):
         """
-        Description: Returns if the track is reversed.
+        Description: Reverses the audio data of the given track.
         Args:
             - None
-        Returns:
-            - Boolean
-        Relationship(s):
-            - None
         """
-        return self.reverse_track
-
-    def set_reverse(self, reverse: bool):
-        """
-        Description: Sets if the track is reversed.
-        Args:
-            - Boolean value to indicate if the track is reversed.
-        Returns:
-            - None
-        Relationship(s):
-            - None
-        """
-
-        self.is_reversed = reverse
+        self.track_data = self.track_data[::-1]
 
     def get_pitch_modulation(self):
         """

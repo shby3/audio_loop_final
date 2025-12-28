@@ -94,6 +94,12 @@ def handle_mute_loop(button_dict):
     loop.toggle_mute()
 
 
+def handle_reverse(button_dict):
+    default_handler("reverse_loop")
+    loop = button_dict["controller"].loop
+    track = button_dict["track"]
+    loop.reverse_track(track)
+
 """
 +++------------------------------------------------------------------------+++
 Standalone button info dictionaries. These dictionaries are nested in curated
@@ -144,6 +150,17 @@ delete_track = {
     "button": None,
     "shortcut": QKeySequence.Delete,
     "handler": lambda: default_handler("delete_track"),
+    "controller": None,
+}
+
+reverse_track = {
+    "key": "reverse_track",
+    "icon": (ICON_PATH + "reverse_icon.svg"),
+    "tooltip": "Reverse track. Cannot be used while audio is playing.",
+    "action": handle_reverse,
+    "button": None,
+    "shortcut": QKeySequence.Delete,
+    "handler": None,
     "controller": None,
 }
 
@@ -210,7 +227,7 @@ mute_loop = {
     "action": None,
     "button": None,
     "shortcut": None,
-    "handler": lambda: handle_mute_loop(button_dict),
+    "handler": lambda: handle_mute_loop(mute_loop),
     "controller": None,
 }
 
@@ -357,6 +374,7 @@ TransportButtons = {
 
 TrackButtons = {
     "select_track": select_track,
+    "reverse_track": reverse_track,
 }
 
 LoopButtons = {
