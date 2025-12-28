@@ -6,6 +6,7 @@ import sounddevice as sd
 import numpy as np
 import soundfile as sf
 import os
+import re
 
 assert np  # keeps linter from complaining np isn't directly called
 
@@ -43,7 +44,7 @@ class Track:
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
         self.track_volume = 1.0
         self.channel_config = channel_config
-        self.project_path = project_path
+        self.project_path = project_path + "/audio"
         self.track_filepath = track_filepath
 
         # Get track data
@@ -76,11 +77,17 @@ class Track:
         Relationship(s):
             - None.
         """
+        # Create directories if necessary
+        audio_dir = self.project_path + "/audio"
+        os.makedirs(audio_dir, exist_ok=True)
+        os.makedirs(self.project_path, exist_ok=True)
+
         # create file name
-        file_name = f"track_{self.track_birth}.wav"
+        clean_time = re.sub(r'[ :.]+', '-', str(datetime.now()))
+        file_name = f"track_{clean_time}.wav"
 
         # Create a wav file
-        filepath = os.path.join(self.project_path, file_name)
+        filepath = os.path.join(audio_dir, file_name)
         sf.write(filepath, self.track_data, SAMPLE_RATE)
         # Set new filepath for Track
         self.track_filepath = filepath
@@ -224,7 +231,7 @@ class Track:
 
 
 if __name__ == "__main__":
-    track = Track(track_filepath="projects/samples/scale.aif")
+    track = Track(track_filepath="../../projects/samples/scale.aif")
     sd.play(track.track_data, SAMPLE_RATE)
     sleep(6)
     print(track)

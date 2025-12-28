@@ -9,8 +9,8 @@ Written by: Michelle Mann
 
 
 import json
-from loop import Loop
-from track import Track
+from .loop import Loop
+from .track import Track
 from pathlib import Path
 
 
@@ -43,11 +43,12 @@ class FileManager:
             - A dedicated file path mapped to a dataclass storage location.
         """
         if path is None:
-            path = f"../projects/loops/{loop.loop_id}/{loop.loop_id}.loop"
+            path = f"../projects/loops/{loop.loop_name}/{loop.loop_name}.loop"
         p = Path(path)
 
         # Make project directory
-        d = Path(f"../projects/loops/{loop.loop_id}")
+        project_dir = f"../projects/loops/{loop.loop_name}"
+        d = Path(project_dir)
         d.mkdir(exist_ok=True)
 
         # Serialize track objects to their file paths or None
@@ -66,7 +67,8 @@ class FileManager:
             "loop_birth": (loop.loop_birth.isoformat()
                            if hasattr(loop.loop_birth, 'isoformat')
                            else str(loop.loop_birth)),
-            "loop_id": loop.loop_id
+            "loop_id": loop.loop_id,
+            "project_path": project_dir
         }
 
         p.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -95,14 +97,18 @@ class FileManager:
         data = json.loads(text)
 
         # Create loop first
-        loop = Loop(loop_name=data["loop_name"])
+        loop = Loop(loop_name=data["loop_name"], project_path=data["project_path"])
 
         # Maps the loop data - deserialize track paths to Track objects
         loop_dir = Path(path).parent
 
         for pos, track_data in data["loop_tracks"].items():
             try:
-                loop.loop_tracks[int(pos)] = Track(track_filepath=track_data["filepath"])
+                loop.loop_tracks[int(pos)] = Track(
+                    track_filepath=track_data["filepath"],
+                    track_name=track_data["name"],
+                    project_path=track_data["project_path"],
+                )
             except FileNotFoundError:
                 # For testing: keep track path string if file missing
                 loop.loop_tracks[int(pos)] = Track()

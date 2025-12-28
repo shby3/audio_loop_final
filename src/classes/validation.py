@@ -5,8 +5,10 @@ then passes back to controller for execution.
 Written by: Michelle Mann
 """
 
-from loop import Loop
-import exceptions as e
+from src.classes.loop import Loop
+from src.classes import exceptions as e
+
+
 # import pathlib as path
 
 

@@ -1,9 +1,12 @@
 from datetime import datetime
 
-from file_manager import FileManager
-from loop import Loop
-import exceptions as e
+from .file_manager import FileManager
+from .loop import Loop
+import src.classes.exceptions as e
 import os
+
+DEFAULT_LOOP_NAME = "New_Loop"
+LOOP_DIR = "../projects/loops"
 
 
 class Controller:
@@ -257,11 +260,8 @@ class Controller:
         Relationship(s):
             - Called by load_loop()
         """
-        # Gets our active_loop
-        loop = self.loop()
-
         # Serializes the file to our content list.
-        self.file_manager.serialize_loop(loop)
+        self.file_manager.serialize_loop(self.loop)
 
     def deserialize_loop(self, file) -> Loop:
         """
@@ -324,32 +324,22 @@ class Controller:
         formatted_now = now.strftime("%Y%m%d%H%M%S")
         return formatted_now
 
-    def create_new_loop(self):
+    def create_new_loop(self, name=DEFAULT_LOOP_NAME):
         """
-        Serializes active loop and clears all related data from GUI and buffer.
-        Creates new loop object, with empty mappings ready for editing.
+        Create new loop and its project directory. Called when creating a new loop project,
+        not when opening an existing project.
         """
-        # Confirm that active_loop is actually pointing to something
-        if not self.validator.is_valid_loop(self.loop):
-            raise e.InvalidLoop("Cannot store active loop.")
-
-        # Serializes current loop
-        # TODO: Install loop serializer
-        # self.file_manager.serialize_loop(self.active_loop)
-
-        # Creates new loop object - this loop object is currently deserialized
-        # (in memory).
-        # TODO: Ensure this process actually makes sense with loop creation is
-        # complete.
-        loop_name = self.process_filename()
-        new_loop = Loop(loop_name=loop_name)
-
-        # Maps loop object to GUI
-        # TODO: Install UI label mapper
-        # self.gui.map_labels(active_loop)
-
-        # Sets new loop to active_loop
-        self.loop = new_loop
+        project_dir = f"{LOOP_DIR}/{name}"
+        # If the project name already exists, add a "_1" until it doesn't exist
+        while os.path.isdir(project_dir):
+            project_dir += "_1"
+        # Make the project path
+        os.makedirs(project_dir)
+        # Inside the project, make a directory to hold audio files
+        audio_dir = project_dir + "/audio"
+        os.makedirs(audio_dir)
+        # Make the loop and set its name and path
+        self.loop = Loop(project_path=project_dir, loop_name=name)
 
     def export_loop(self):
         """
@@ -574,9 +564,13 @@ class Controller:
         projects_dir = "../projects"  # top level directory
         # add subdirectories to path if not present
         loops_dir = os.path.join(projects_dir, "loops")
+        samples_dir = os.path.join(projects_dir, "samples")
+        waveform_dir = os.path.join(projects_dir, "waveform_images")
 
         # exist_ok=True avoids raising err if directories already exist
         os.makedirs(loops_dir, exist_ok=True)
+        os.makedirs(samples_dir, exist_ok=True)
+        os.makedirs(waveform_dir, exist_ok=True)
 
     def set_project_home(self, folder_path):
         """

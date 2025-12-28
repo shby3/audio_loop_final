@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from track import Track
+from .track import Track
 import numpy as np
 import sounddevice as sd
 from time import sleep
@@ -50,7 +50,7 @@ class Loop:
         and the controller what will act on the tracks.
     """
 
-    def __init__(self, loop_name=DEFAULT_LOOP_NAME, loop_tracks=None) -> None:
+    def __init__(self, project_path=".", loop_name=DEFAULT_LOOP_NAME, loop_tracks=None) -> None:
         """
         Description: Initializes the loop object.
 
@@ -67,15 +67,16 @@ class Loop:
         self.is_recording = False
         self.is_playing = False
         self.recording_track = 1
+        self.project_path = project_path
 
         if loop_tracks is None:
             self.loop_tracks = {
-                1: Track(track_name="Track 1"),
-                2: Track(track_name="Track 2"),
-                3: Track(track_name="Track 3"),
-                4: Track(track_name="Track 4"),
-                5: Track(track_name="Track 5"),
-                6: Track(track_name="Track 6"),
+                1: Track(track_name="Track 1", project_path=self.project_path),
+                2: Track(track_name="Track 2", project_path=self.project_path),
+                3: Track(track_name="Track 3", project_path=self.project_path),
+                4: Track(track_name="Track 4", project_path=self.project_path),
+                5: Track(track_name="Track 5", project_path=self.project_path),
+                6: Track(track_name="Track 6", project_path=self.project_path),
             }
         else:
             self.loop_tracks = loop_tracks

@@ -1,10 +1,6 @@
 from PySide6.QtGui import QKeySequence
 from copy import deepcopy
 from functools import partial
-from loop import Loop
-from track import Track
-from file_manager import FileManager
-from controller import Controller
 
 """
 +++------------------------------------------------------------------------+++
@@ -62,7 +58,7 @@ def handle_record(button_dict):
     default_handler("record_loop")
     loop = button_dict["controller"].loop
     loop.is_recording = not loop.is_recording
-    if loop.is_playing:
+    if loop.is_playing and loop.recording_track not in recorded_tracks:
         recorded_tracks.append(loop.recording_track)
     print(f"Loop recording = {loop.is_recording}")
 
@@ -71,7 +67,7 @@ def handle_play(button_dict):
     default_handler("play_loop")
     loop = button_dict["controller"].loop
     loop.play()
-    if loop.is_recording:
+    if loop.is_recording and loop.recording_track not in recorded_tracks:
         recorded_tracks.append(loop.recording_track)
 
 
@@ -88,7 +84,7 @@ def handle_select_track(button_dict):
     default_handler(f"select_track {button_dict["track"]}")
     loop = button_dict["controller"].loop
     loop.set_recording_track(button_dict["track"])
-    if loop.is_recording and loop.is_playing:
+    if loop.is_recording and loop.is_playing and loop.recording_track not in recorded_tracks:
         recorded_tracks.append(loop.recording_track)
 
 

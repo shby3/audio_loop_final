@@ -1,11 +1,12 @@
 from PySide6.QtWidgets import QApplication
-from src.gui_src.windows import MainWindow
-import sys
-from controller import Controller
-from src.gui_src.file_dialog import ProjectChoiceDialog
+from gui_src.windows import MainWindow
+from classes.controller import Controller
+from gui_src.file_dialog import ProjectChoiceDialog
 import os
-from loop import Loop
-from track import Track
+import sys
+from classes.loop import Loop
+
+PROJECT_PATH = "../projects/loops"
 
 """
 +++------------------------------------------------------------------------+++
@@ -35,7 +36,7 @@ def main():
     if dialog.exec() == ProjectChoiceDialog.Accepted:
         if dialog.choice == ProjectChoiceDialog.NEW_PROJECT:
             print("User chose NEW project")
-            controller.loop = Loop()
+            controller.create_new_loop()
         elif dialog.choice == ProjectChoiceDialog.OPEN_PROJECT:
             print("User opened:", dialog.project_path)
             controller.load_loop_from_file(dialog.project_path)
@@ -46,6 +47,9 @@ def main():
     window = MainWindow(controller)
     window.show()
     app.exec()
+
+    # Serialize the Loop upon exiting
+    controller.serialize_loop()
 
 
 if __name__ == "__main__":
