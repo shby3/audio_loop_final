@@ -1145,6 +1145,24 @@ class Controller:
             # TODO: Implement stereo balance processing
             pass
 
+    @staticmethod
+    def create_directories():
+        """
+        Description: Sets up the necessary directories for the app.
+        Args:
+            -
+        Returns:
+            -
+        Relationship(s):
+            -
+        """
+        projects_dir = "../projects"  # top level directory
+        # add subdirectories to path if not present
+        loops_dir = os.path.join(projects_dir, "loops")
+
+        # exist_ok=True avoids raising err if directories already exist
+        os.makedirs(loops_dir, exist_ok=True)
+
     def set_project_home(self, folder_path):
         """
         Description: Sets up the project home directory and creates required

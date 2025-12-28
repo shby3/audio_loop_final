@@ -31,14 +31,18 @@ ICON_PATH = os.path.join(os.path.dirname(__file__), "icon_src") + os.sep
 
 # New loop
 tracks = {
-        1: Track(track_name="Track 1"),
-        2: Track(track_name="Track 2", track_filepath="../projects/recordings/kick.aif"),
-        3: Track(track_name="Track 3", track_filepath="../projects/recordings/snare.aif"),
-        4: Track(track_name="Track 4", track_filepath="../projects/recordings/scale.aif"),
-        5: Track(track_name="Track 5"),
-        6: Track(track_name="Track 6")
+        1: Track(track_name="Track 1", project_filepath="../projects/loops"),
+        2: Track(track_name="Track 2", track_filepath="../projects/samples/kick.aif"),
+        3: Track(track_name="Track 3", track_filepath="../projects/samples/snare.aif"),
+        4: Track(track_name="Track 4", track_filepath="../projects/samples/scale.aif"),
+        5: Track(track_name="Track 5", track_filepath="../projects/samples/hat.aif"),
+        6: Track(track_name="Track 6", project_filepath="../projects/loops"),
     }
 loop = Loop(loop_tracks=tracks)
+
+# Tracks recorded onto when loop was last playing. When record is stopped, these are cleared
+# and saved to files.
+recorded_tracks = []
 
 
 def default_handler(button_name: str, handler=None):
@@ -79,9 +83,34 @@ def make_track_button(track_num, button_dict):
 
 
 def handle_record():
-    loop.is_recording = not loop.is_recording
     default_handler("record_loop")
+    loop.is_recording = not loop.is_recording
+    if loop.is_playing:
+        recorded_tracks.append(loop.recording_track)
     print(f"Loop recording = {loop.is_recording}")
+
+
+def handle_play():
+    default_handler("play_loop")
+    loop.play()
+    if loop.is_recording:
+        recorded_tracks.append(loop.recording_track)
+
+
+def handle_stop():
+    default_handler("stop_loop")
+    print(recorded_tracks)
+    while len(recorded_tracks) > 0:
+        t = recorded_tracks.pop()
+        loop.get_track(t).generate_track_file()
+    loop.stop()
+
+
+def handle_select_track(track):
+    default_handler(f"select_track {track}")
+    loop.set_recording_track(track)
+    if loop.is_recording and loop.is_playing:
+        recorded_tracks.append(loop.recording_track)
 
 
 """
@@ -231,7 +260,7 @@ play_loop = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": lambda: default_handler("play_loop", loop.play),
+    "handler": handle_play,
 }
 
 record_loop = {
@@ -261,7 +290,7 @@ stop_loop = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence("Ctrl+Space"),
-    "handler": lambda: default_handler("stop_loop", loop.stop),
+    "handler": handle_stop,
 }
 
 undo = {
@@ -281,7 +310,7 @@ select_track = {
     "action": None,
     "button": None,
     "shortcut": None,
-    "handler": loop.set_recording_track,
+    "handler": handle_select_track,
 }
 
 

@@ -65,6 +65,7 @@ class Loop:
         self.loop_name = loop_name
         self.current_frame = 0
         self.is_recording = False
+        self.is_playing = False
         self.recording_track = 1
 
         if loop_tracks is None:
@@ -129,6 +130,7 @@ class Loop:
                 - None
         """
         self.stream.start()
+        self.is_playing = True
 
     def stop(self):
         """
@@ -140,6 +142,7 @@ class Loop:
                 - None
         """
         self.stream.stop()
+        self.is_playing = False
         self.current_frame = 0
 
     def pause(self):
@@ -231,6 +234,19 @@ class Loop:
             - Called by the Controller to set a track in the loop.
         """
         self.loop_tracks[position] = track
+
+    def get_track(self, position: int) -> Track:
+        """
+        Description: Gets the track at the given position in the loop's
+        dictionary of tracks.
+        Args:
+            position: The position to set the track
+        Returns: The track at the given position in the loop.
+
+        Relationships:
+            - Called by the Controller to set a track in the loop.
+        """
+        return self.loop_tracks[position]
 
     def remove_track(self, position: int) -> None:
         """

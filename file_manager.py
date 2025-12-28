@@ -219,7 +219,7 @@ class FileManager:
                 - Tracks
                 - Loops
                 - .hidden:
-                    - .recordings
+                    - .samples
                     - .waveform_images
         """
 
@@ -235,7 +235,7 @@ class FileManager:
         hidden_dir = home_dir / ".hidden"           # Parent of hidden folders.
 
         # Children of hidden folders
-        recordings_dir = hidden_dir / ".recordings"
+        recordings_dir = hidden_dir / ".samples"
         waveform_images_dir = hidden_dir / ".waveform_images"
 
         recordings_dir.mkdir(parents=True, exist_ok=True)

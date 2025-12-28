@@ -34,6 +34,7 @@ class Track:
         reverse_track=False,
         time_dilation=0,
         pitch_modulation=0,
+        project_filepath="..",
         track_filepath=None
     ):
         # track attributes
@@ -42,14 +43,13 @@ class Track:
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
         self.track_volume = 1.0
         self.channel_config = channel_config
-        self.track_birth = time()  # format is seconds since Unix epoch
+        self.project_filepath = project_filepath
+        self.track_filepath = track_filepath
 
-        # Create track_filepath if necessary and get track data
+        # Get track data
         if track_filepath is None:
-            self.track_filepath = self.generate_track_path()
             self.track_data = copy.copy(EMPTY_TRACK)
         else:
-            self.track_filepath = track_filepath
             data, self.track_fs = sf.read(track_filepath, always_2d=True)
             if len(data) > DEFAULT_TRACK_LEN:
                 self.track_data = data[:DEFAULT_TRACK_LEN]
@@ -65,10 +65,10 @@ class Track:
     def __repr__(self):
         return f"Track(id={self.track_id}, name={self.track_name}, .wav file={self.track_filepath})"
 
-    def generate_track_path(self) -> str:
+    def generate_track_file(self) -> str:
         """
-        Description: Ensures project directories are present then creates a
-                     path to the next track audio file.
+        Description: Create a track file from track data.
+
         Args:
             - None.
         Returns:
@@ -79,21 +79,11 @@ class Track:
         # create file name
         file_name = f"track_{self.track_birth}.wav"
 
-        projects_dir = "projects"  # top level directory
-        # add subdirectories to path if not present
-        recordings_dir = os.path.join(projects_dir, "recordings")
-        waveforms_dir = os.path.join(projects_dir, "waveforms")
-        wav_images_dir = os.path.join(projects_dir, "waveform_images")
-
-        # exist_ok=True avoids raising err if directories already exist
-        os.makedirs(recordings_dir, exist_ok=True)
-        os.makedirs(waveforms_dir, exist_ok=True)
-        os.makedirs(wav_images_dir, exist_ok=True)
-
         # Create a wav file
-        filepath = os.path.join(recordings_dir, file_name)
-        sf.write(filepath, [], SAMPLE_RATE)
-
+        filepath = os.path.join(self.project_filepath, file_name)
+        sf.write(filepath, self.track_data, SAMPLE_RATE)
+        # Set new filepath for Track
+        self.track_filepath = filepath
         return filepath
 
     def get_volume(self):
@@ -234,7 +224,7 @@ class Track:
 
 
 if __name__ == "__main__":
-    track = Track(track_filepath="./projects/recordings/scale.aif")
+    track = Track(track_filepath="projects/samples/scale.aif")
     sd.play(track.track_data, SAMPLE_RATE)
     sleep(6)
     print(track)

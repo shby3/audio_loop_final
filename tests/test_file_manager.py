@@ -57,7 +57,7 @@ class TestFileManager(unittest.TestCase):
             # Check that directories were created
             self.assertTrue((result / "Tracks").exists())
             self.assertTrue((result / "Loops").exists())
-            self.assertTrue((result / ".hidden" / ".recordings").exists())
+            self.assertTrue((result / ".hidden" / ".samples").exists())
             self.assertTrue((result / ".hidden" / ".waveform_images").exists())
 
     def test_rename_file(self):

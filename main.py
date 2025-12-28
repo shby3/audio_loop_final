@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QApplication
 from src.gui_src.windows import MainWindow
 import sys
+from controller import Controller
 from loop import Loop
 from track import Track
 
@@ -19,6 +20,7 @@ def main():
     Returns:
         - Exits with system status code.
     """
+    Controller.create_directories()
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
