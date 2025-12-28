@@ -43,12 +43,11 @@ class FileManager:
             - A dedicated file path mapped to a dataclass storage location.
         """
         if path is None:
-            path = f"../projects/loops/{loop.loop_name}/{loop.loop_name}.loop"
+            path = f"{loop.project_path}/{loop.loop_name}.loop"
         p = Path(path)
 
         # Make project directory
-        project_dir = f"../projects/loops/{loop.loop_name}"
-        d = Path(project_dir)
+        d = Path(loop.project_path)
         d.mkdir(exist_ok=True)
 
         # Serialize track objects to their file paths or None
@@ -68,7 +67,7 @@ class FileManager:
                            if hasattr(loop.loop_birth, 'isoformat')
                            else str(loop.loop_birth)),
             "loop_id": loop.loop_id,
-            "project_path": project_dir
+            "project_path": loop.project_path,
         }
 
         p.write_text(json.dumps(data, indent=2), encoding="utf-8")

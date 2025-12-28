@@ -44,7 +44,7 @@ class Track:
         self.track_id = f"Track_{self.track_birth.strftime("%Y%m%d%H%M%S")}"
         self.track_volume = 1.0
         self.channel_config = channel_config
-        self.project_path = project_path + "/audio"
+        self.project_path = project_path
         self.track_filepath = track_filepath
 
         # Get track data
