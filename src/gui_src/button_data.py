@@ -88,6 +88,12 @@ def handle_select_track(button_dict):
         recorded_tracks.append(loop.recording_track)
 
 
+def handle_mute_loop(button_dict):
+    default_handler("mute_loop")
+    loop = button_dict["controller"].loop
+    loop.toggle_mute()
+
+
 """
 +++------------------------------------------------------------------------+++
 Standalone button info dictionaries. These dictionaries are nested in curated
@@ -204,7 +210,7 @@ mute_loop = {
     "action": None,
     "button": None,
     "shortcut": None,
-    "handler": lambda: default_handler("mute_loop"),
+    "handler": lambda: handle_mute_loop(button_dict),
     "controller": None,
 }
 

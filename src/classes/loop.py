@@ -68,6 +68,7 @@ class Loop:
         self.is_playing = False
         self.recording_track = 1
         self.project_path = project_path
+        self.is_muted = False
 
         if loop_tracks is None:
             self.loop_tracks = {
@@ -93,16 +94,21 @@ class Loop:
     def _callback(self, indata, outdata, frames, time, status):
         if status:
             print(status)
+
         # Chunksize is the number of frames in indata/outdata or the frames
         # remaining in the audio data.
         chunksize = min(DEFAULT_LOOP_LEN - self.current_frame, frames)
 
         end_frame = self.current_frame + chunksize
         # Output chunksize frames to be processed, limiting the values to avoid audio clipping
-        out = sum(
-            track.track_data[self.current_frame:end_frame] for track in self.loop_tracks.values()
-        )
-        outdata[:chunksize] = np.clip(out, -1.0, 1.0)
+        # (Output nothing if muted)
+        if self.is_muted:
+            outdata[:chunksize] = 0
+        else:
+            out = sum(
+                track.track_data[self.current_frame:end_frame] for track in self.loop_tracks.values()
+            )
+            outdata[:chunksize] = np.clip(out, -1.0, 1.0)
 
         # Record to the recording track if recording is on
         if self.is_recording:
@@ -112,11 +118,14 @@ class Loop:
         # starting and start at the beginning.
         if chunksize < frames:
             end_frame = frames - chunksize
-            out = sum(
-                track.track_data[:end_frame] for track in self.loop_tracks.values()
-            )
-            outdata[chunksize:] = np.clip(out, -1.0, 1.0)
-            self.current_frame = end_frame
+            if self.is_muted:
+                outdata[chunksize:] = 0
+            else:
+                out = sum(
+                    track.track_data[:end_frame] for track in self.loop_tracks.values()
+                )
+                outdata[chunksize:] = np.clip(out, -1.0, 1.0)
+                self.current_frame = end_frame
             if self.is_recording:
                 self.loop_tracks[self.recording_track].track_data[:end_frame] += indata[chunksize:frames+chunksize]
         else:
@@ -155,6 +164,16 @@ class Loop:
                 - None
         """
         self.stream.stop()
+
+    def set_is_muted(self, is_muted):
+        """
+        Description: Sets whether the loop is muted.
+        """
+        self.is_muted = is_muted
+
+    def toggle_mute(self):
+        """Toggles the mute status of the loop."""
+        self.is_muted = not self.is_muted
 
     def set_is_recording(self, is_recording):
         """
