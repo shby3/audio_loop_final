@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QDial, QWidgetAction, QApplication
 from PySide6.QtCore import Qt
 from .button_functions import make_buttons_list
 from .button_data import AllButtonsDict, Toolbars

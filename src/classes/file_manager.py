@@ -9,6 +9,8 @@ Written by: Michelle Mann
 
 
 import json
+import re
+
 from .loop import Loop
 from .track import Track
 from pathlib import Path
@@ -43,7 +45,9 @@ class FileManager:
             - A dedicated file path mapped to a dataclass storage location.
         """
         if path is None:
-            path = f"{loop.project_path}/{loop.loop_name}.loop"
+            invalid_chars = r'[\\/:*?"|<>\x00 ]'
+            clean_name = re.sub(invalid_chars, '_', loop.loop_name)
+            path = f"{loop.project_path}/{clean_name}.loop"
         p = Path(path)
 
         # Make project directory
@@ -144,7 +148,6 @@ class FileManager:
         track = Track(
             track_name=data.get("track_name", "New Track"),
             channel_config=data.get("channel_config", 1),
-            reverse_track=data.get("is_reversed", False),
             time_dilation=data.get("time_dilation", 0),
             pitch_modulation=data.get("pitch_modulation", 0)
         )
@@ -180,7 +183,6 @@ class FileManager:
             "track_name": track.track_name,
             "channel_config": track.channel_config,
             "track_volume": track.track_volume,
-            "is_reversed": track.is_reversed,
             "time_dilation": track.time_dilation,
             "pitch_modulation": track.pitch_modulation,
             "track_birth": (track.track_birth.isoformat()

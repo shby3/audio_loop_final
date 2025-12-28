@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from .file_manager import FileManager
@@ -329,7 +330,9 @@ class Controller:
         Create new loop and its project directory. Called when creating a new loop project,
         not when opening an existing project.
         """
-        project_dir = f"{LOOP_DIR}/{name}"
+        invalid_chars = r'[\\/:*?"|<>\x00 ]'
+        clean_name = re.sub(invalid_chars, '_', name)
+        project_dir = f"{LOOP_DIR}/{clean_name}"
         # If the project name already exists, add a "_1" until it doesn't exist
         while os.path.isdir(project_dir):
             project_dir += "_1"

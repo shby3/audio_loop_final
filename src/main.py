@@ -1,10 +1,9 @@
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QInputDialog, QLineEdit
 from gui_src.windows import MainWindow
 from classes.controller import Controller
 from gui_src.file_dialog import ProjectChoiceDialog
 import os
 import sys
-from classes.loop import Loop
 
 PROJECT_PATH = "../projects/loops"
 
@@ -36,7 +35,20 @@ def main():
     if dialog.exec() == ProjectChoiceDialog.Accepted:
         if dialog.choice == ProjectChoiceDialog.NEW_PROJECT:
             print("User chose NEW project")
-            controller.create_new_loop()
+
+            # Get the name of the project with QInputDialog
+            text, ok_pressed = QInputDialog.getText(
+                None,  # Parent widget (None for no parent)
+                "Input Dialog Title",  # Dialog title
+                "Enter your project name:",  # Label text
+                QLineEdit.Normal,  # Echo mode (e.g., Normal, NoEcho, Password)
+                ""  # Default text (empty string here)
+            )
+
+            if ok_pressed and text != '':
+                print("User entered:", text)
+
+            controller.create_new_loop(name=text)
         elif dialog.choice == ProjectChoiceDialog.OPEN_PROJECT:
             print("User opened:", dialog.project_path)
             controller.load_loop_from_file(dialog.project_path)
