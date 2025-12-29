@@ -35,7 +35,9 @@ class Track:
         time_dilation=0,
         pitch_modulation=0,
         project_path="..",
-        track_filepath=None
+        track_filepath=None,
+        left=1.0,
+        right=1.0
     ):
         # track attributes
         self.track_name = track_name
@@ -45,6 +47,8 @@ class Track:
         self.channel_config = channel_config
         self.project_path = project_path
         self.track_filepath = track_filepath
+        self.left = left
+        self.right = right
 
         # Get track data
         if track_filepath is None:
@@ -127,6 +131,16 @@ class Track:
             - None
         """
         self.track_data = self.track_data[::-1]
+
+    def add_effect(self, effect, key):
+        """
+        Description: Adds an effect to the track.
+
+        Args:
+            - effect (function): for loop to read and apply to track data
+            - key (str): key to put in self.effects dictionary
+        """
+        self.effects[key] = effect
 
     def get_pitch_modulation(self):
         """

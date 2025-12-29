@@ -1,6 +1,12 @@
+import json
+
 from PySide6.QtGui import QKeySequence
 from copy import deepcopy
 from functools import partial
+
+from PySide6.QtWidgets import QInputDialog, QLineEdit
+
+VOLUME_LIMIT = 8.0
 
 """
 +++------------------------------------------------------------------------+++
@@ -100,6 +106,38 @@ def handle_reverse(button_dict):
     track = button_dict["track"]
     loop.reverse_track(track)
 
+
+def handle_pan(button_dict):
+    default_handler("loop")
+    loop = button_dict["controller"].loop
+    track = loop.get_track(button_dict["track"])
+
+    # Open up a dialog to adjust track left and right volume
+    # Get the name of the project with QInputDialog
+    text, ok_pressed = QInputDialog.getText(
+        None,  # Parent widget (None for no parent)
+        "Adjust left and right volume",  # Dialog title
+        "Enter your project name:",  # Label text
+        QLineEdit.Normal,  # Echo mode (e.g., Normal, NoEcho, Password)
+        '{"left":1.0, "right":1.0}'  # Default text (empty string here)
+    )
+
+    if ok_pressed and text != '':
+        try:
+            # Make sure left and right are formatted as expected
+            pan_data = json.loads(text)
+            left = float(pan_data["left"])
+            right = float(pan_data["right"])
+            # Make sure left and right are less than a limit
+            assert left < abs(VOLUME_LIMIT)
+            assert right < abs(VOLUME_LIMIT)
+            # Apply left and right to track
+            track.left = left
+            track.right = right
+        except Exception as e:
+            print(e)
+
+
 """
 +++------------------------------------------------------------------------+++
 Standalone button info dictionaries. These dictionaries are nested in curated
@@ -159,7 +197,18 @@ reverse_track = {
     "tooltip": "Reverse track. Cannot be used while audio is playing.",
     "action": handle_reverse,
     "button": None,
-    "shortcut": QKeySequence.Delete,
+    "shortcut": None,
+    "handler": None,
+    "controller": None,
+}
+
+pan_track = {
+    "key": "pan_track",
+    "icon": (ICON_PATH + "pan_icon.svg"),
+    "tooltip": "Open dialog to adjust audio panning.",
+    "action": handle_pan,
+    "button": None,
+    "shortcut": None,
     "handler": None,
     "controller": None,
 }
@@ -375,6 +424,7 @@ TransportButtons = {
 TrackButtons = {
     "select_track": select_track,
     "reverse_track": reverse_track,
+    "pan_track": pan_track,
 }
 
 LoopButtons = {

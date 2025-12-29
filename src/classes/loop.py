@@ -1,3 +1,5 @@
+import math
+import random
 from datetime import datetime
 import os
 from .track import Track
@@ -106,7 +108,7 @@ class Loop:
             outdata[:chunksize] = 0
         else:
             out = sum(
-                track.track_data[self.current_frame:end_frame] for track in self.loop_tracks.values()
+                self.apply_effects(track.track_data[self.current_frame:end_frame], track) for track in self.loop_tracks.values()
             )
             outdata[:chunksize] = np.clip(out, -1.0, 1.0)
 
@@ -122,7 +124,7 @@ class Loop:
                 outdata[chunksize:] = 0
             else:
                 out = sum(
-                    track.track_data[:end_frame] for track in self.loop_tracks.values()
+                    self.apply_effects(track.track_data[:end_frame], track) for track in self.loop_tracks.values()
                 )
                 outdata[chunksize:] = np.clip(out, -1.0, 1.0)
                 self.current_frame = end_frame
@@ -164,6 +166,15 @@ class Loop:
                 - None
         """
         self.stream.stop()
+
+    def apply_effects(self, data, track):
+        """
+        Description: Functions to pass to values in track data before output
+        """
+        # Pan audio by multiplying by left and right values
+        data[:, 0] *= track.left
+        data[:, 1] *= track.right
+        return data
 
     def set_is_muted(self, is_muted):
         """

@@ -2,8 +2,6 @@
 +++------------------------------------------------------------------------+++
 Creation of the methods associated with serialization
 and deserialization for tracks and loops.
-
-Written by: Michelle Mann
 +++------------------------------------------------------------------------+++
 """
 
@@ -58,9 +56,12 @@ class FileManager:
         serialized_tracks = {}
         for pos, track in loop.loop_tracks.items():
             track_data = {
-                "name": track.track_name, "id": track.track_id,
+                "name": track.track_name,
+                "id": track.track_id,
                 "filepath": track.track_filepath,
-                "project_path": track.project_path
+                "project_path": track.project_path,
+                "left": track.left,
+                "right": track.right
             }
             serialized_tracks[pos] = track_data
 
@@ -111,6 +112,8 @@ class FileManager:
                     track_filepath=track_data["filepath"],
                     track_name=track_data["name"],
                     project_path=track_data["project_path"],
+                    left=float(track_data["left"]),
+                    right=float(track_data["right"])
                 )
             except FileNotFoundError:
                 # For testing: keep track path string if file missing

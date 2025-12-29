@@ -39,7 +39,7 @@ def main():
             # Get the name of the project with QInputDialog
             text, ok_pressed = QInputDialog.getText(
                 None,  # Parent widget (None for no parent)
-                "Input Dialog Title",  # Dialog title
+                "Project namer",  # Dialog title
                 "Enter your project name:",  # Label text
                 QLineEdit.Normal,  # Echo mode (e.g., Normal, NoEcho, Password)
                 ""  # Default text (empty string here)
