@@ -7,6 +7,7 @@ import numpy as np
 import soundfile as sf
 import os
 import re
+import librosa
 
 assert np  # keeps linter from complaining np isn't directly called
 
@@ -60,10 +61,6 @@ class Track:
             else:
                 self.track_data = copy.copy(EMPTY_TRACK)
                 self.track_data[:len(data)] = data
-
-        # effects
-        self.time_dilation = time_dilation
-        self.pitch_modulation = pitch_modulation
 
     def __repr__(self):
         return f"Track(id={self.track_id}, name={self.track_name}, .wav file={self.track_filepath})"
@@ -132,6 +129,31 @@ class Track:
         """
         self.track_data = self.track_data[::-1]
 
+    def slip(self, frames):
+        """
+        Description: Offset the start point of the track by a number of frames.
+        Cut off frames are filled with 0.
+        Args:
+            - frames(int): The number of frames to slip.
+        """
+        audio = self.track_data
+        N = audio.shape[0]
+
+        if frames == 0:
+            return
+
+        out = np.zeros_like(audio)
+
+        if frames > 0:
+            # Shift forward: pad start with zeros
+            out[frames:] = audio[:N - frames]
+        else:
+            # Shift backward: pad end with zeros
+            f = abs(frames)
+            out[:N - f] = audio[f:]
+
+        self.track_data[:] = out
+
     def add_effect(self, effect, key):
         """
         Description: Adds an effect to the track.
@@ -156,7 +178,7 @@ class Track:
 
         return self.pitch_modulation
 
-    def set_pitch_modulation(self, pitch_modulation: int):
+    def set_pitch_modulation(self, steps: int):
         """
         Description: Sets pitch modulation of the track.
         Args:
@@ -167,7 +189,8 @@ class Track:
         Relationship(s):
             - None
         """
-        self.pitch_modulation = pitch_modulation
+        self.track_data = librosa.effects.pitch_shift(self.track_data, sr=SAMPLE_RATE, n_steps=steps)
+        print("Pitch modulated")
 
     def get_time_dilation(self):
         """

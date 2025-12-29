@@ -1,6 +1,7 @@
 import json
 
 from PySide6.QtGui import QKeySequence
+from PySide6.QtCore import QThread, Signal
 from copy import deepcopy
 from functools import partial
 
@@ -38,6 +39,20 @@ ICON_PATH = os.path.join(os.path.dirname(__file__), "icon_src") + os.sep
 # Tracks recorded onto when loop was last playing. When record is stopped, these are cleared
 # and saved to files.
 recorded_tracks = []
+
+
+class PitchShiftWorker(QThread):
+    """ Worker thread to handle pitch shift """
+    finished = Signal()
+
+    def __init__(self, track, steps):
+        super().__init__()
+        self.track = track
+        self.steps = steps
+
+    def run(self):
+        self.track.pitch_shift(self.steps)
+        self.finished.emit()
 
 
 def default_handler(button_name: str, handler=None):
@@ -108,7 +123,7 @@ def handle_reverse(button_dict):
 
 
 def handle_pan(button_dict):
-    default_handler("loop")
+    default_handler("hand_pan")
     loop = button_dict["controller"].loop
     track = loop.get_track(button_dict["track"])
 
@@ -117,7 +132,7 @@ def handle_pan(button_dict):
     text, ok_pressed = QInputDialog.getText(
         None,  # Parent widget (None for no parent)
         "Adjust left and right volume",  # Dialog title
-        "Enter your project name:",  # Label text
+        "Replace only the numbers with decimal values up to 8.0:",  # Label text
         QLineEdit.Normal,  # Echo mode (e.g., Normal, NoEcho, Password)
         '{"left":1.0, "right":1.0}'  # Default text (empty string here)
     )
@@ -137,6 +152,30 @@ def handle_pan(button_dict):
         except Exception as e:
             print(e)
 
+
+def handle_slip(button_dict):
+    default_handler("handle_slip")
+    loop = button_dict["controller"].loop
+    track = loop.get_track(button_dict["track"])
+
+    # Open up a dialog to adjust track left and right volume
+    # Get the name of the project with QInputDialog
+    text, ok_pressed = QInputDialog.getText(
+        None,  # Parent widget (None for no parent)
+        "Slip track",  # Dialog title
+        "Slip track n frames",  # Label text
+        QLineEdit.Normal,  # Echo mode (e.g., Normal, NoEcho, Password)
+        'n'  # Default text (empty string here)
+    )
+
+    if ok_pressed and text != '':
+        try:
+            # Make sure text is an int
+            fs = int(text)
+            # Apply slip
+            track.slip(fs)
+        except Exception as e:
+            print(e)
 
 """
 +++------------------------------------------------------------------------+++
@@ -207,6 +246,28 @@ pan_track = {
     "icon": (ICON_PATH + "pan_icon.svg"),
     "tooltip": "Open dialog to adjust audio panning.",
     "action": handle_pan,
+    "button": None,
+    "shortcut": None,
+    "handler": None,
+    "controller": None,
+}
+
+slip_track = {
+    "key": "slip_track",
+    "icon": (ICON_PATH + "slip_icon.svg"),
+    "tooltip": "Open dialog to slip track. Cannot be used while audio is playing.",
+    "action": handle_slip,
+    "button": None,
+    "shortcut": None,
+    "handler": None,
+    "controller": None,
+}
+
+pitch_track = {
+    "key": "pitch_track",
+    "icon": (ICON_PATH + "pitch_icon.svg"),
+    "tooltip": "Open dialog to adjust pitch. Cannot be used while audio is playing.",
+    "action": None,
     "button": None,
     "shortcut": None,
     "handler": None,
@@ -425,6 +486,7 @@ TrackButtons = {
     "select_track": select_track,
     "reverse_track": reverse_track,
     "pan_track": pan_track,
+    "slip_track": slip_track,
 }
 
 LoopButtons = {

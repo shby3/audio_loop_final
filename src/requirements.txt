@@ -13,3 +13,4 @@ Send2Trash==1.8.3
 shiboken6==6.10.0
 sounddevice==0.5.3
 soundfile==0.13.1
+librosa
