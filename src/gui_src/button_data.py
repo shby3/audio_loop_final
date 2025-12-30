@@ -154,7 +154,7 @@ def handle_pan(button_dict):
 
 
 def handle_slip(button_dict):
-    default_handler("handle_slip")
+    default_handler("slip_track")
     loop = button_dict["controller"].loop
     track = loop.get_track(button_dict["track"])
 
@@ -176,6 +176,13 @@ def handle_slip(button_dict):
             track.slip(fs)
         except Exception as e:
             print(e)
+
+
+def handle_clear(button_dict):
+    default_handler("clear_track")
+    loop = button_dict["controller"].loop
+    track = loop.get_track(button_dict["track"])
+    track.clear()
 
 """
 +++------------------------------------------------------------------------+++
@@ -211,10 +218,10 @@ clear_track = {
     "key": "clear_track",
     "icon": (ICON_PATH + "clear_track_icon.svg"),
     "tooltip": "Clears the track",
-    "action": None,
+    "action": handle_clear,
     "button": None,
     "shortcut": None,
-    "handler": lambda: default_handler("clear_track"),
+    "handler": None,
     "controller": None,
     "track": None,
 }
@@ -487,6 +494,7 @@ TrackButtons = {
     "reverse_track": reverse_track,
     "pan_track": pan_track,
     "slip_track": slip_track,
+    "clear_track": clear_track,
 }
 
 LoopButtons = {

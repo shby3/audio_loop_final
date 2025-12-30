@@ -3,7 +3,6 @@ from datetime import datetime
 
 from .file_manager import FileManager
 from .loop import Loop
-import src.classes.exceptions as e
 import os
 
 DEFAULT_LOOP_NAME = "New_Loop"

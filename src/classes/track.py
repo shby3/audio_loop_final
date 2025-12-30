@@ -92,6 +92,12 @@ class Track:
         self.track_filepath = filepath
         return filepath
 
+    def clear(self):
+        """
+        Description: Clears the track file.
+        """
+        self.track_data = np.full((DEFAULT_TRACK_LEN, 2), 0, dtype=DTYPE)
+
     def get_volume(self):
         """
         Description: Obtains volume of the track.
