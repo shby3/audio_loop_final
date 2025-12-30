@@ -206,9 +206,13 @@ def handle_clear(button_dict):
     loop = controller.loop
     track = loop.get_track(button_dict["track"])
 
+    # Do nothing if the track is already clear
+    if track.is_clear:
+        return
+
     # Function for undoing clear
     def undo_clear():
-        track.set_data()
+        track.set_last_track()
     controller.add_undo(undo_clear)
 
     # Clear track
