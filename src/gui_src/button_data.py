@@ -94,11 +94,18 @@ def handle_play(button_dict):
 
 def handle_stop(button_dict):
     default_handler("stop_loop")
-    loop = button_dict["controller"].loop
+    controller = button_dict["controller"]
+    loop = controller.loop
+    undo_tracks = recorded_tracks.copy()
+
     while len(recorded_tracks) > 0:
         t = recorded_tracks.pop()
         loop.get_track(t).generate_track_file()
     loop.stop()
+
+    def undo_stop():
+        controller.undo_records(undo_tracks)
+    controller.add_undo(undo_stop)
 
 
 def handle_select_track(button_dict):
@@ -117,14 +124,20 @@ def handle_mute_loop(button_dict):
 
 def handle_reverse(button_dict):
     default_handler("reverse_loop")
-    loop = button_dict["controller"].loop
+    controller = button_dict["controller"]
+    loop = controller.loop
     track = button_dict["track"]
     loop.reverse_track(track)
+
+    def undo_reverse():
+        track.set_data()
+    controller.add_undo(undo_reverse)
 
 
 def handle_pan(button_dict):
     default_handler("hand_pan")
-    loop = button_dict["controller"].loop
+    controller = button_dict["controller"]
+    loop = controller.loop
     track = loop.get_track(button_dict["track"])
 
     # Open up a dialog to adjust track left and right volume
@@ -152,10 +165,15 @@ def handle_pan(button_dict):
         except Exception as e:
             print(e)
 
+    def undo_pan():
+        track.set_data()
+    controller.add_undo(undo_pan)
+
 
 def handle_slip(button_dict):
     default_handler("slip_track")
-    loop = button_dict["controller"].loop
+    controller = button_dict["controller"]
+    loop = controller.loop
     track = loop.get_track(button_dict["track"])
 
     # Open up a dialog to adjust track left and right volume
@@ -177,12 +195,31 @@ def handle_slip(button_dict):
         except Exception as e:
             print(e)
 
+    def undo_slip():
+        track.set_data()
+    controller.add_undo(undo_slip)
+
 
 def handle_clear(button_dict):
     default_handler("clear_track")
-    loop = button_dict["controller"].loop
+    controller = button_dict["controller"]
+    loop = controller.loop
     track = loop.get_track(button_dict["track"])
+
+    # Function for undoing clear
+    def undo_clear():
+        track.set_data()
+    controller.add_undo(undo_clear)
+
+    # Clear track
     track.clear()
+
+
+def handle_undo(button_dict):
+    default_handler("undo")
+    controller = button_dict["controller"]
+    loop = controller.loop
+    controller.undo()
 
 """
 +++------------------------------------------------------------------------+++
@@ -432,7 +469,7 @@ undo = {
     "action": None,
     "button": None,
     "shortcut": QKeySequence.Undo,
-    "handler": lambda: default_handler("undo"),
+    "handler": lambda: handle_undo(undo),
     "controller": None,
 }
 

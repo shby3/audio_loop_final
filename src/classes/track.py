@@ -51,9 +51,11 @@ class Track:
         self.left = left
         self.right = right
 
-        # Get track data
+        # Get track data and set corresponding attributes
         if track_filepath is None:
             self.track_data = copy.copy(EMPTY_TRACK)
+            # List of recorded track files. Used for undoing changes made by accessing previous files.
+            self.track_stack = []
         else:
             data, self.track_fs = sf.read(track_filepath, always_2d=True)
             if len(data) > DEFAULT_TRACK_LEN:
@@ -61,6 +63,7 @@ class Track:
             else:
                 self.track_data = copy.copy(EMPTY_TRACK)
                 self.track_data[:len(data)] = data
+            self.track_stack = [track_filepath]
 
     def __repr__(self):
         return f"Track(id={self.track_id}, name={self.track_name}, .wav file={self.track_filepath})"
@@ -90,7 +93,34 @@ class Track:
         sf.write(filepath, self.track_data, SAMPLE_RATE)
         # Set new filepath for Track
         self.track_filepath = filepath
+        # Add file to front of the Track stack
+        self.track_stack.append(filepath)
         return filepath
+
+    def set_data(self):
+        """
+        Description: Reset the track data by reading from the track file.
+        """
+        data, self.track_fs = sf.read(self.track_filepath, always_2d=True)
+        if len(data) > DEFAULT_TRACK_LEN:
+            self.track_data = data[:DEFAULT_TRACK_LEN]
+        else:
+            self.track_data = copy.copy(EMPTY_TRACK)
+            self.track_data[:len(data)] = data
+
+    def set_last_track(self):
+        """
+        Description: Reset the track data by reading from the previous track file.
+        """
+        if len(self.track_stack) <= 1:
+            return
+
+        cur_file = self.track_stack.pop()
+        last_file = self.track_stack.pop()
+
+        self.track_filepath = last_file
+        self.set_data()
+
 
     def clear(self):
         """

@@ -112,6 +112,10 @@ class Controller:
         self.file_manager = FileManager()
         self.content_list = None
 
+        # Stacks for undoing and redoing
+        self.undo_stack = []
+        self.redo_stack = []
+
         # Specific mode toggles - changes to specific modes:
         self.load_state = False     # Next drag is obj -> pos
         self.move_state = False     # Next drag is internal pos -> pos.
@@ -172,6 +176,49 @@ class Controller:
             - All button, gesture, and user-interface for the application.
         """
         self.gui = gui
+
+    def add_undo(self, function):
+        """
+        Description: Adds a new undo action to the undo stack.
+
+        Args:
+            - function (obj): A function to undo the last change made
+        """
+        self.undo_stack.append(function)
+
+    def add_redo(self, function):
+        """
+        Description: Adds a new redo action to the redo stack.
+
+        Args:
+            - function (obj): A function to undo the last undo made
+        """
+        self.redo_stack.append(function)
+
+    def undo(self):
+        """
+        Description: Perform an undo using the undo stack
+        """
+        if len(self.undo_stack) > 0:
+            self.undo_stack.pop()()
+
+    def undo_records(self, recorded_tracks):
+        """
+        Description: With a list of track numbers, set the corresponding tracks in Loop
+        to their last used file.
+
+        Args:
+            - recorded_tracks (list): A list of track numbers.
+        """
+        for track_num in recorded_tracks:
+            track = self.loop.get_track(track_num)
+            track.set_last_track()
+
+    def redo(self):
+        """
+        Description: Perform a redo using the redo stack
+        """
+        self.redo_stack.pop()()
 
     def get_file_manager(self):
         """

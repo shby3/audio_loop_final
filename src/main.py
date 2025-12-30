@@ -45,7 +45,9 @@ def main():
                 )
                 if ok_pressed and text != '':
                     print("User entered:", text)
-                controller.create_new_loop(name=text)
+                    controller.create_new_loop(name=text)
+                else:
+                    controller.create_new_loop()
         elif dialog.choice == ProjectChoiceDialog.OPEN_PROJECT:
             print("User opened:", dialog.project_path)
             controller.load_loop_from_file(dialog.project_path)
